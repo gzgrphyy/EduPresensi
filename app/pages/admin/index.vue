@@ -57,7 +57,7 @@ function aksiLabel(aksi: string) {
       <div class="mb-6">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <!-- PTK -->
-          <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 p-3">
+          <div class="rounded-lg border admin-accent-border bg-white dark:bg-slate-800 p-3">
             <div class="flex items-center gap-3">
               <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -70,7 +70,7 @@ function aksiLabel(aksi: string) {
           </div>
 
           <!-- Murid -->
-          <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 p-3">
+          <div class="rounded-lg border admin-accent-border bg-white dark:bg-slate-800 p-3">
             <div class="flex items-center gap-3">
               <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-3.4-3.4 9.337 9.337 0 00-3.763.303m-5.354.93A4.125 4.125 0 0012 16.125a4.125 4.125 0 00-3.4 3.4 9.337 9.337 0 00-3.763-.303m5.354-.93a9.337 9.337 0 00-2.625-.372 9.337 9.337 0 00-4.121.952 4.125 4.125 0 003.4 3.4 9.337 9.337 0 003.763-.303M12 12.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" />
@@ -83,7 +83,7 @@ function aksiLabel(aksi: string) {
           </div>
 
           <!-- Kelas -->
-          <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 p-3">
+          <div class="rounded-lg border admin-accent-border bg-white dark:bg-slate-800 p-3">
             <div class="flex items-center gap-3">
               <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25A2.25 2.25 0 0110.5 10.5H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25h-2.25a2.25 2.25 0 01-2.25-2.25v-2.25z" />
@@ -96,7 +96,7 @@ function aksiLabel(aksi: string) {
           </div>
 
           <!-- Ruangan (dengan sub-info ruangan aktif) -->
-          <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 p-3">
+          <div class="rounded-lg border admin-accent-border bg-white dark:bg-slate-800 p-3">
             <div class="flex items-center gap-3">
               <svg class="w-5 h-5 -translate-y-1 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0v3.75a2.25 2.25 0 01-2.25 2.25h-6a2.25 2.25 0 01-2.25-2.25V9.75A2.25 2.25 0 0113.5 7.5h.75v-3h-.75A2.25 2.25 0 009.75 3H3v18h6.75a2.25 2.25 0 002.25-2.25V7.5h3v3z" />
@@ -112,7 +112,7 @@ function aksiLabel(aksi: string) {
       </div>
 
       <!-- SECTION 2: Kehadiran Hari Ini (satu card combined) -->
-      <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5 mb-6">
+      <div class="bg-white dark:bg-slate-800 rounded-lg border admin-accent-border p-5 mb-6">
         <div class="flex items-center justify-between mb-5">
           <div>
             <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ t('admin.beranda.kehadiranHariIni') }}</h3>

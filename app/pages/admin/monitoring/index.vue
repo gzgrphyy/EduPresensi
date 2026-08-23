@@ -99,7 +99,7 @@ onMounted(() => {
 
     <template v-else>
       <div class="grid grid-cols-1 sm:grid-cols-[1.3fr_1fr] gap-4 mb-5">
-        <div class="rounded-lg bg-[rgb(var(--surface-1))] dark:bg-slate-800 p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-lg border admin-accent-border p-5 mb-6">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
@@ -118,7 +118,7 @@ onMounted(() => {
           </p>
         </div>
 
-        <div class="rounded-lg bg-[rgb(var(--surface-1))] dark:bg-slate-800 p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-lg border admin-accent-border p-5 mb-6">
           <p class="text-[12px] text-gray-500 dark:text-gray-400 tracking-wider">{{ t('admin.monitoring.statPartisipasiHariIni') }}</p>
           <p class="text-2xl mt-2" style="color: rgb(var(--text-accent))">{{ partisipasiPersen }}%</p>
           <div class="mt-3 h-[6px] rounded-full bg-gray-200 dark:bg-slate-700 overflow-hidden">
@@ -129,7 +129,7 @@ onMounted(() => {
 
       <!-- Search -->
       <div class="flex flex-wrap items-center gap-3 mb-4">
-        <div class="relative flex-1 max-w-xs">
+        <div class="relative flex-1 max-w-xs -mt-6">
           <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
