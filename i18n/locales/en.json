@@ -594,6 +594,7 @@
       "statIzin": "Permit",
       "statAlpha": "Absent",
       "statPersentase": "Percentage",
+      "kehadiranHariIni": "Today's Attendance",
       "topAlphaTitle": "Top Absent Students",
       "topAlphaDesc": "This month period",
       "unitMurid": "students",
