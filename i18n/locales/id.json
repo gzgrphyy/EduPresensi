@@ -130,9 +130,22 @@
       "pwModalMsg": "Password untuk akun murid. Salin dan sampaikan ke murid.",
       "confirmDeleteTitle": "Hapus Data Murid",      "confirmDeleteMsg": "Yakin ingin menghapus {nama}?",
       "semuaJenjang": "Semua Jenjang",
-      "labelTitleKontakWali": "KONTAK ORANGTUA/WALI"
-
-
+      "labelTitleKontakWali": "KONTAK ORANGTUA/WALI",
+      "importTitle": "Import Data Murid dari Excel",
+      "importBtn": "Import Data",
+      "importSuccess": "Import berhasil",
+      "importPartial": "Import sebagian berhasil",
+      "importFailed": "Semua data gagal diimport",
+      "previewRows": "Preview {count} baris pertama",
+      "requiredCols": "Kolom yang dibutuhkan: Nama Lengkap, Jenis Kelamin, NIP, No HP, Email, dll",
+      "resultSuccess": "Berhasil",
+      "resultFailed": "Gagal",
+      "resultTotal": "Total",
+      "detailError": "Detail Error",
+      "importLagi": "Import Lagi",
+      "downloadTemplate": "Download Template",
+      "belumPunyaTemplate": "Belum punya template?",
+      "templateHint": "Download template Excel untuk diisi sebelum import."
     },
     "guru": {
       "title": "Data PTK",
@@ -199,7 +212,22 @@
       "semuaJenjang": "Semua Jenjang"
 
 ,
-      "msgBerhasilHapus": "Data PTK berhasil dihapus"
+      "msgBerhasilHapus": "Data PTK berhasil dihapus",
+      "importTitle": "Import Data PTK dari Excel",
+      "importBtn": "Import Data",
+      "importSuccess": "Import berhasil",
+      "importPartial": "Import sebagian berhasil",
+      "importFailed": "Semua data gagal diimport",
+      "previewRows": "Preview {count} baris pertama",
+      "requiredCols": "Kolom yang dibutuhkan: Nama Lengkap, Jenis Kelamin, NIP, No HP, Email, dll",
+      "resultSuccess": "Berhasil",
+      "resultFailed": "Gagal",
+      "resultTotal": "Total",
+      "detailError": "Detail Error",
+      "importLagi": "Import Lagi",
+      "downloadTemplate": "Download Template",
+      "belumPunyaTemplate": "Belum punya template?",
+      "templateHint": "Download template Excel untuk diisi sebelum import."
     },
     "rekap": {
       "title": "Rekap Absensi",
