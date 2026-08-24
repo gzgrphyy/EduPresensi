@@ -10,7 +10,13 @@ function toggleColorMode() {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
 }
 
-async function handleLogout() {
+const showLogoutModal = ref(false)
+
+function openLogoutModal() {
+  showLogoutModal.value = true
+}
+
+async function confirmLogout() {
   try { await clear() } catch {}
   navigateTo('/login')
 }
@@ -52,7 +58,7 @@ onMounted(() => {
           </button>
 
           <button
-            @click="handleLogout"
+            @click="openLogoutModal"
             class="p-2 rounded-lg text-gray-400 dark:text-gray-500 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors"
             :title="t('common.keluar')"
           >
@@ -72,5 +78,35 @@ onMounted(() => {
     </main>
 
     <PTKBottomNav />
+
+    <BaseModal :show="showLogoutModal" title="Keluar" max-w="max-w-sm" @close="showLogoutModal = false">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center text-red-500 dark:text-red-400 flex-shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Yakin ingin keluar?</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Kamu akan kembali ke halaman login.</p>
+        </div>
+      </div>
+      <template #footer>
+        <button
+          type="button"
+          @click="showLogoutModal = false"
+          class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+        >
+          Batal
+        </button>
+        <button
+          type="button"
+          @click="confirmLogout"
+          class="px-5 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors shadow-sm"
+        >
+          Ya, Keluar
+        </button>
+      </template>
+    </BaseModal>
   </div>
 </template>

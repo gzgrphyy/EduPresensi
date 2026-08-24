@@ -205,6 +205,114 @@ async function handleDelete() {
   showSuccess(t('admin.jadwal.msgBerhasilHapus'))
   await refresh()
 }
+
+// Import Excel state
+const showImportModal = ref(false)
+const importFile = ref<File | null>(null)
+const importPreview = ref<Array<Record<string, any>>>([])
+const importHeaders = ref<string[]>([])
+const importLoading = ref(false)
+const importSubmitting = ref(false)
+const importResult = ref<{ success: number; failed: number; errors: Array<{ row: number; error: string }> } | null>(null)
+
+function openImport() {
+  showImportModal.value = true
+  importFile.value = null
+  importPreview.value = []
+  importHeaders.value = []
+  importLoading.value = false
+  importSubmitting.value = false
+  importResult.value = null
+}
+
+function closeImportModal() {
+  showImportModal.value = false
+  importFile.value = null
+  importPreview.value = []
+  importHeaders.value = []
+  importResult.value = null
+}
+
+async function handleFileChange(e: Event) {
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+
+  importFile.value = file
+  importLoading.value = true
+  importResult.value = null
+
+  try {
+    const buffer = await file.arrayBuffer()
+    // @ts-ignore
+    const XLSX = await import('xlsx')
+    const workbook = XLSX.read(buffer, { type: 'array' })
+    const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
+    const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(firstSheet, { defval: '' })
+
+    if (jsonData.length === 0) {
+      showError('File Excel kosong')
+      importPreview.value = []
+      importHeaders.value = []
+      return
+    }
+
+    importHeaders.value = Object.keys(jsonData[0])
+    importPreview.value = jsonData.slice(0, 50)
+  } catch (err) {
+    showError('Gagal membaca file Excel')
+    importPreview.value = []
+    importHeaders.value = []
+  } finally {
+    importLoading.value = false
+  }
+}
+
+async function handleImport() {
+  if (importPreview.value.length === 0) return
+
+  importSubmitting.value = true
+  errorMsg.value = ''
+  successMsg.value = ''
+
+  try {
+    const items = importPreview.value.map(row => ({
+      hari: String(row['Hari'] || row['hari'] || '').trim(),
+      jamMulai: String(row['Jam Mulai'] || row['jamMulai'] || '').trim(),
+      jamSelesai: String(row['Jam Selesai'] || row['jamSelesai'] || '').trim(),
+      mapel: String(row['Mapel'] || row['mapel'] || '').trim(),
+      kelas: String(row['Kelas'] || row['kelas'] || '').trim(),
+      ruangan: String(row['Ruangan'] || row['ruangan'] || '').trim(),
+      guruPengampu: String(row['Guru Pengampu'] || row['guruPengampu'] || '').trim(),
+      ptkPendamping: String(row['PTK Pendamping'] || row['ptkPendamping'] || '').trim() || null
+    }))
+
+    const { data, error } = await useFetch('/api/admin/jadwal-pelajaran/import', {
+      method: 'POST',
+      body: { items }
+    })
+
+    if (error.value) {
+      showError(error.value.statusMessage || 'Gagal import data')
+      return
+    }
+
+    importResult.value = data.value?.summary || null
+    if (data.value?.summary?.failed === 0) {
+      showSuccess(data.value?.message || 'Import berhasil')
+      await refresh()
+    } else if (data.value?.summary?.success === 0) {
+      showError('Semua data gagal diimport')
+    } else {
+      showSuccess(data.value?.message || 'Import sebagian berhasil')
+      await refresh()
+    }
+  } catch (err: any) {
+    showError(err?.data?.statusMessage || 'Gagal import data')
+  } finally {
+    importSubmitting.value = false
+  }
+}
 </script>
 
 <template>
@@ -239,13 +347,22 @@ async function handleDelete() {
           {{ t('common.aturUlang') }}
         </button>
       </div>
-      <button @click="openCreate"
-        class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs ">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        <span class="hidden sm:inline">{{ t('admin.jadwal.tambahJadwal') }}</span>
-      </button>
+      <div class="flex items-center gap-2">
+        <button @click="openImport"
+          class="inline-flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 rounded-md border admin-accent-border hover:bg-gray-50 dark:hover:bg-slate-700 text-xs transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          <span class="hidden sm:inline">Import Excel</span>
+        </button>
+        <button @click="openCreate"
+          class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs ">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span class="hidden sm:inline">{{ t('admin.jadwal.tambahJadwal') }}</span>
+        </button>
+      </div>
     </div>
 
     <Notification type="error" :message="errorMsg" :show="!!errorMsg" @dismiss="errorMsg = ''" />
@@ -447,5 +564,144 @@ async function handleDelete() {
       @confirm="handleDelete"
       @cancel="confirmDelete = null"
     />
+
+    <Teleport to="body">
+      <!-- Modal Import Excel -->
+      <Transition name="fade">
+        <div v-if="showImportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" @click="closeImportModal"></div>
+          <div class="relative bg-white dark:bg-gray-800 rounded-lg w-full max-w-3xl mx-auto overflow-hidden border border-gray-300 dark:border-gray-600 max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between px-4 pt-4 pb-2">
+              <h2 class="text-lg text-gray-900 dark:text-gray-100">Import Jadwal Pelajaran</h2>
+              <button @click="closeImportModal"
+                class="p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div class="p-4 overflow-y-auto flex-1 space-y-4">
+              <!-- Template Download -->
+              <div class="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div>
+                  <p class="text-xs font-medium text-blue-700 dark:text-blue-300">Belum punya template?</p>
+                  <p class="text-xs text-blue-600 dark:text-blue-400">Unduh template Excel dengan format kolom yang sesuai</p>
+                </div>
+                <a href="/api/admin/jadwal-pelajaran/template-export" download class="inline-flex items-center gap-1.5 px-3 py-2 text-xs text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Unduh Template
+                </a>
+              </div>
+
+              <!-- File Upload Area -->
+              <div v-if="!importPreview.length && !importResult" class="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-lg p-8 text-center">
+                <input type="file" accept=".xlsx,.xls,.csv" @change="handleFileChange" class="hidden" id="jadwal-import-file" />
+                <label for="jadwal-import-file" class="cursor-pointer inline-flex flex-col items-center gap-3">
+                  <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Pilih file Excel untuk diimport</span>
+                  <span class="text-xs text-gray-400 dark:text-gray-500">Kolom: Hari, Jam Mulai, Jam Selesai, Mapel, Kelas, Ruangan, Guru Pengampu, PTK Pendamping (opsional)</span>
+                </label>
+              </div>
+
+              <!-- Preview Table -->
+              <div v-if="importPreview.length > 0 && !importResult" class="space-y-3">
+                <p class="text-xs text-gray-500 dark:text-gray-400">Pratinjau {{ importPreview.length }} baris pertama</p>
+                <div class="overflow-x-auto border border-gray-200 dark:border-slate-600 rounded-lg">
+                  <table class="w-full text-xs">
+                    <thead>
+                      <tr class="bg-gray-50 dark:bg-slate-700/50">
+                        <th v-for="header in importHeaders" :key="header" class="px-3 py-2 text-left text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-slate-600">
+                          {{ header }}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-slate-600">
+                      <tr v-for="(row, idx) in importPreview" :key="idx" class="hover:bg-gray-50 dark:hover:bg-slate-700/30">
+                        <td v-for="header in importHeaders" :key="header" class="px-3 py-2 text-gray-700 dark:text-gray-300">
+                          {{ row[header] || '-' }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Import Result -->
+              <div v-if="importResult" class="space-y-3">
+                <div class="p-4 rounded-lg border" :class="importResult.failed === 0 ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'">
+                  <div class="flex items-center gap-2 mb-2">
+                    <svg v-if="importResult.failed === 0" class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <svg v-else class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">Import selesai</span>
+                  </div>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">
+                    Berhasil: <span class="font-medium text-green-600">{{ importResult.success }}</span> |
+                    Gagal: <span class="font-medium text-red-600">{{ importResult.failed }}</span> |
+                    Total: {{ importResult.success + importResult.failed }}
+                  </p>
+                </div>
+
+                <div v-if="importResult.errors.length > 0" class="border border-red-200 dark:border-red-800 rounded-lg overflow-hidden">
+                  <div class="bg-red-50 dark:bg-red-900/20 px-4 py-2 border-b border-red-200 dark:border-red-800">
+                    <p class="text-xs font-medium text-red-700 dark:text-red-400">Detail error:</p>
+                  </div>
+                  <div class="max-h-48 overflow-y-auto">
+                    <div v-for="(err, idx) in importResult.errors" :key="idx" class="px-4 py-2 border-b border-red-100 dark:border-red-900/30 last:border-b-0">
+                      <span class="text-xs text-red-600 dark:text-red-400">Baris {{ err.row }}: {{ err.error }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div v-if="!importResult" class="flex justify-end gap-3 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+              <button type="button" @click="closeImportModal"
+                class="px-4 py-2 text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md transition-colors">
+                Batal
+              </button>
+              <button type="button" @click="handleImport" :disabled="importSubmitting || importPreview.length === 0"
+                class="px-5 py-2 text-xs text-white bg-blue-600 rounded-md hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2">
+                <svg v-if="importSubmitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                {{ importSubmitting ? t('common.menyimpan') : 'Import Sekarang' }}
+              </button>
+            </div>
+            <div v-else class="flex justify-end gap-3 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+              <button type="button" @click="closeImportModal"
+                class="px-4 py-2 text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md transition-colors">
+                {{ t('common.tutup') }}
+              </button>
+              <button type="button" @click="openImport"
+                class="px-5 py-2 text-xs text-white bg-blue-600 rounded-md hover:bg-blue-700 active:bg-blue-800">
+                Import Lagi
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </AppLayout>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

@@ -46,7 +46,6 @@ const guruMenus = computed<MenuItem[]>(() => [
   { label: t('nav.scanQr'), to: '/absensi/scan', icon: 'scan' },
   { label: t('nav.riwayatAbsensi'), to: '/absensi/riwayat', icon: 'riwayat' },
   { label: t('nav.jadwal'), to: '/absensi/jadwal', icon: 'jadwal' },
-  { label: t('nav.exportLaporan'), to: '/absensi/export', icon: 'export' },
   { label: t('nav.profil'), to: '/absensi/profil', icon: 'profile' },
 ])
 

@@ -590,7 +590,7 @@
     "monitoring": {
       "title": "Pemantauan Ruangan",
       "desc": "Pantau sesi absensi secara langsung",
-      "langsung": "Langsung",
+      "langsung": "Langsung Hari Ini",
       "hariIni": "Hari ini",
       "statRuanganAktif": "Ruangan Aktif",
       "statPartisipasiHariIni": "Partisipasi Hari Ini",
@@ -614,7 +614,7 @@
     "beranda": {
       "title": "Beranda Admin",
       "desc": "Ikhtisar sistem absensi sekolah",
-      "langsung": "Langsung",
+      "langsung": "Langsung Hari Ini",
       "hariIni": "Hari ini",
       "statJumlahPtk": "Jumlah PTK",
       "statJumlahMurid": "Jumlah Murid",

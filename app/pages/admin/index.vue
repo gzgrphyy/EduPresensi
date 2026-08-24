@@ -45,7 +45,6 @@ function aksiLabel(aksi: string) {
             <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
             {{ t('admin.beranda.langsung') }}
           </div>
-          <span class="text-[10px] px-1.5 py-0.5 rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 ">{{ t('admin.beranda.hariIni') }}</span>
         </div>
       </template>
     </PageHeader>
