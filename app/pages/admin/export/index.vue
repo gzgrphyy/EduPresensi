@@ -282,7 +282,7 @@ function formatDateDisplay(dStr: string) {
                 <h3 class="text-xs font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                   {{ opt.label }}
                 </h3>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                <p class="text-[12px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
                   {{ opt.description }}
                 </p>
               </div>

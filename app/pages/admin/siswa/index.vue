@@ -18,6 +18,7 @@
   const { t } = useI18n()
 
   const searchQuery = ref('')
+  const showInactive = ref(false)
   const filterKelas = ref(0)
   const filterJenjang = ref('')
   const sortOrder = ref('')
@@ -122,11 +123,12 @@
     return displayData.value.slice(start, start + pageSize)
   })
 
-  watch([searchQuery, filterJenjang], () => { filterKelas.value = 0; page.value = 1 })
+  watch([searchQuery, filterJenjang, showInactive], () => { filterKelas.value = 0; page.value = 1 })
   watch(filterKelas, () => { page.value = 1 })
 
   const { data: siswaList, pending, refresh } = useFetch < Siswa[] > (() => {
     const params = new URLSearchParams()
+    if (showInactive.value) params.set('showInactive', 'true')
     if (searchQuery.value) params.set('search', searchQuery.value)
     if (filterKelas.value) params.set('kelasId', String(filterKelas.value))
     return `/api/admin/siswa?${params.toString()}`
@@ -134,6 +136,9 @@
   const { data: kelasList } = useFetch < { id: number; nama: string }[] > ('/api/admin/kelas', { immediate: true })
 
   const showModal = ref(false)
+  const emptyMsg = computed(() =>
+    showInactive.value ? t('admin.guru.emptyInactive') : t('admin.siswa.empty')
+  )
   const editing = ref < Siswa | null > (null)
   const form = ref({ nama: '', nisn: '', email: '', kelasId: 0, jenisKelamin: '', namaWali: '', emailWali: '', kontakWali: '', kontakWali2: '', nomorHp1: '', nomorHp2: '' })
   const saving = ref(false)
@@ -445,34 +450,65 @@
           <option :value="0">{{ t('admin.jadwal.semuaKelas') }}</option>
           <option v-for="k in filteredKelasList" :key="k.id" :value="k.id">{{ k.nama }}</option>
         </select>
-        <button role="switch" :aria-checked="sortOrder === 'abjad'" @click="toggleSort()"
-          :class="sortOrder === 'abjad'
-            ? 'bg-blue-600 text-white ring-1 ring-blue-300 shadow-sm'
-            : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 ring-1 ring-gray-200 dark:ring-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'"
-          class="inline-flex items-center gap-2.5 pl-3 pr-4 h-[38px] rounded-lg text-xs font-medium transition-colors select-none"
-          :title="sortOrder === 'abjad' ? t('admin.siswa.namaAz') : t('admin.siswa.namaAzOff')">
-          <span :class="sortOrder === 'abjad' ? 'bg-white/25' : 'bg-gray-200 dark:bg-slate-600'"
-            class="relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200">
-            <span :class="sortOrder === 'abjad' ? 'translate-x-[22px]' : 'translate-x-[3px]'"
-              class="inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-300 shadow-md transition-all duration-200" />
+
+        <!-- Toggle Nama A-Z -->
+        <label class="inline-flex items-center gap-2 cursor-pointer select-none group">
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="sortOrder === 'abjad'"
+            @click="toggleSort()"
+            :class="sortOrder === 'abjad'
+              ? 'bg-blue-600 ring-1 ring-blue-300'
+              : 'bg-gray-200 dark:bg-slate-600 ring-1 ring-gray-300 dark:ring-slate-500'"
+            class="relative inline-flex h-5 w-9 items-center rounded-full transition-all duration-200 focus:outline-none"
+            :title="sortOrder === 'abjad' ? t('admin.siswa.namaAz') : t('admin.siswa.namaAzOff')">
+            <span
+              :class="sortOrder === 'abjad' ? 'translate-x-[18px]' : 'translate-x-[2px]'"
+              class="inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-slate-300 shadow-sm transition-all duration-200" />
+          </button>
+          <span class="text-xs text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">
+            {{ t('admin.siswa.namaAz') }}
           </span>
-          <span>{{ t('admin.siswa.namaAz') }}</span>
+        </label>
+
+        <!-- Toggle Tampilkan Nonaktif -->
+        <label class="inline-flex items-center gap-2 cursor-pointer select-none group">
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="showInactive"
+            @click="showInactive = !showInactive"
+            :class="showInactive
+              ? 'bg-blue-600 ring-1 ring-blue-300'
+              : 'bg-gray-200 dark:bg-slate-600 ring-1 ring-gray-300 dark:ring-slate-500'"
+            class="relative inline-flex h-5 w-9 items-center rounded-full transition-all duration-200 focus:outline-none"
+            :title="t('admin.guru.tampilkanNonaktif')">
+            <span
+              :class="showInactive ? 'translate-x-[18px]' : 'translate-x-[2px]'"
+              class="inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-slate-300 shadow-sm transition-all duration-200" />
+          </button>
+          <span class="text-xs text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">
+            {{ t('admin.guru.tampilkanNonaktif') }}
+          </span>
+        </label>
+      </div>
+      <div class="flex items-center gap-3">
+        <button @click="openImport"
+          class="inline-flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-slate-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 text-xs">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span class="hidden sm:inline">Import Excel</span>
+        </button>
+        <button @click="openCreate"
+          class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span class="hidden sm:inline">{{ t('admin.siswa.tambahMurid') }}</span>
         </button>
       </div>
-      <button @click="openImport"
-        class="inline-flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-slate-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 text-xs">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        <span class="hidden sm:inline">Import Excel</span>
-      </button>
-      <button @click="openCreate"
-        class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs ">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        <span class="hidden sm:inline">{{ t('admin.siswa.tambahMurid') }}</span>
-      </button>
     </div>
 
     <Notification type="error" :message="errorMsg" :show="!!errorMsg" @dismiss="errorMsg = ''" />
@@ -600,7 +636,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                     d="M12 14l9-5-9-5-9 5 9 5zm0 7l-9-5 9-5 9 5-9 5zm0-7l-9-5 9-5 9 5-9 5z" />
                 </svg>
-                <p class="text-gray-500 dark:text-gray-400 ">{{ t('admin.siswa.empty') }}</p>
+                <p class="text-gray-500 dark:text-gray-400 ">{{ emptyMsg }}</p>
               </td>
             </tr>
           </tbody>

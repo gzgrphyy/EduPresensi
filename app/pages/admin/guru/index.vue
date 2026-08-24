@@ -526,51 +526,59 @@ async function copyPassword() {
     <Notification type="success" :message="successMsg" :show="!!successMsg" @dismiss="successMsg = ''" />
 
     <!-- Filter -->
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <div class="flex flex-wrap items-center gap-3">
-          <div class="relative flex-1 max-w-xs">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input v-model="searchQuery" type="text" :placeholder="t('admin.guru.searchPlaceholder')"
-              class="w-full pl-9 pr-3 py-2 border admin-accent-border rounded-lg text-xs bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-400" />
-          </div>
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input v-model="searchQuery" type="text" :placeholder="t('admin.guru.searchPlaceholder')"
+            class="w-40 sm:w-56 pl-9 pr-3 py-2 border admin-accent-border rounded-lg text-xs bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-400" />
+        </div>
+
+        <!-- Toggle Nama A-Z -->
+        <label class="inline-flex items-center gap-2 cursor-pointer select-none group">
           <button
+            type="button"
             role="switch"
             :aria-checked="sortOrder === 'abjad'"
             @click="toggleSort()"
             :class="sortOrder === 'abjad'
-              ? 'bg-blue-600 text-white ring-1 ring-blue-300 shadow-sm'
-              : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 ring-1 ring-gray-200 dark:ring-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'"
-            class="inline-flex items-center gap-2.5 pl-3 pr-4 h-[38px] rounded-lg text-xs font-medium transition-colors select-none"
+              ? 'bg-blue-600 ring-1 ring-blue-300'
+              : 'bg-gray-200 dark:bg-slate-600 ring-1 ring-gray-300 dark:ring-slate-500'"
+            class="relative inline-flex h-5 w-9 items-center rounded-full transition-all duration-200 focus:outline-none"
             :title="sortOrder === 'abjad' ? t('admin.guru.namaAz') : t('admin.guru.namaAzOff')">
-            <span :class="sortOrder === 'abjad' ? 'bg-white/25' : 'bg-gray-200 dark:bg-slate-600'"
-              class="relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-200">
-              <span :class="sortOrder === 'abjad' ? 'translate-x-[22px]' : 'translate-x-[3px]'"
-                class="inline-block h-5 w-5 transform rounded-full bg-white dark:bg-slate-300 shadow-md transition-all duration-200" />
-            </span>
-            <span>{{ t('admin.guru.namaAz') }}</span>
+            <span
+              :class="sortOrder === 'abjad' ? 'translate-x-[18px]' : 'translate-x-[2px]'"
+              class="inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-slate-300 shadow-sm transition-all duration-200" />
           </button>
-        </div>
-        <div class="flex items-center gap-3">
+          <span class="text-xs text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">
+            {{ t('admin.guru.namaAz') }}
+          </span>
+        </label>
+
+        <!-- Toggle Tampilkan Nonaktif -->
         <label class="inline-flex items-center gap-2 cursor-pointer select-none group">
-          <span class="text-xs text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">{{ t('admin.guru.tampilkanNonaktif') }}</span>
           <button
+            type="button"
             role="switch"
             :aria-checked="showInactive"
             @click="showInactive = !showInactive"
             :class="showInactive
               ? 'bg-blue-600 ring-1 ring-blue-300'
-              : 'bg-gray-200 dark:bg-slate-600 ring-1 ring-gray-300 dark:ring-slate-500'
-            "
-            class="relative inline-flex h-5 w-9 items-center rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
-          >
+              : 'bg-gray-200 dark:bg-slate-600 ring-1 ring-gray-300 dark:ring-slate-500'"
+            class="relative inline-flex h-5 w-9 items-center rounded-full transition-all duration-200 focus:outline-none"
+            :title="t('admin.guru.tampilkanNonaktif')">
             <span
               :class="showInactive ? 'translate-x-[18px]' : 'translate-x-[2px]'"
-              class="inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-slate-300 shadow-sm transition-all duration-200"
-            />
+              class="inline-block h-3.5 w-3.5 transform rounded-full bg-white dark:bg-slate-300 shadow-sm transition-all duration-200" />
           </button>
+          <span class="text-xs text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors">
+            {{ t('admin.guru.tampilkanNonaktif') }}
+          </span>
         </label>
+      </div>
+      <div class="flex items-center gap-3">
         <button @click="openImport"
           class="inline-flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-slate-600 rounded-md hover:bg-gray-50 dark:hover:bg-slate-700 text-xs">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -579,14 +587,14 @@ async function copyPassword() {
           <span class="hidden sm:inline">Import Excel</span>
         </button>
         <button @click="openCreate"
-          class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 active:bg-blue-800 text-xs ">
+          class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 active:bg-blue-800 text-xs">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
           <span class="hidden sm:inline">{{ t('admin.guru.tambahPtk') }}</span>
         </button>
       </div>
-      </div>
+    </div>
 
       <!-- Loading skeleton -->
       <div v-if="pending" class="bg-white dark:bg-gray-800 rounded-lg border admin-accent-border overflow-hidden">

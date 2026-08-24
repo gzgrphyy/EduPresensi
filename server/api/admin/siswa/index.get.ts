@@ -2,9 +2,13 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const kelasId = query.kelasId ? parseInt(query.kelasId as string) : undefined
   const search = query.search as string | undefined
+  const showInactive = query.showInactive === 'true'
 
   const data = await prisma.siswa.findMany({
     where: {
+      user: {
+        ...(showInactive ? { isActive: false } : { isActive: true })
+      },
       ...(kelasId && { kelasId }),
       ...(search && {
         OR: [
