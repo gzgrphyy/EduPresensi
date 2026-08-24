@@ -30,6 +30,23 @@ const saving = ref(false)
 const fotoFile = ref<File | null>(null)
 const fotoPreview = ref<string | null>(null)
 const fotoUploading = ref(false)
+const showEditModal = ref(false)
+
+function openEditModal() {
+  errorMsg.value = ''
+  successMsg.value = ''
+  fotoPreview.value = null
+  fotoFile.value = null
+  form.nama = profile.value?.nama || ''
+  form.email = profile.value?.email || ''
+  form.foto = profile.value?.foto
+  showEditModal.value = true
+}
+
+function closeEditModal() {
+  if (saving.value) return
+  showEditModal.value = false
+}
 
 const pwErrorMsg = ref('')
 const pwSuccessMsg = ref('')
@@ -102,6 +119,7 @@ async function handleSave() {
 
     await $fetch('/api/user/profile', { method: 'PUT', body })
     successMsg.value = 'Profil berhasil diperbarui'
+    showEditModal.value = false
     await refresh()
   } catch (err: any) {
     fotoUploading.value = false
@@ -160,71 +178,61 @@ async function handleChangePassword() {
     <Notification type="success" :message="successMsg" :show="!!successMsg" @dismiss="successMsg = ''" />
     <Notification type="error" :message="errorMsg" :show="!!errorMsg" @dismiss="errorMsg = ''" />
 
-    <BaseCard>
-      <form @submit.prevent="handleSave" class="space-y-5">
-        <!-- Info Card -->
-        <div class="flex items-center gap-4 p-4 bg-gray-50 dark:bg-slate-700 rounded-lg border border-gray-100 dark:border-slate-600">
-          <div class="relative flex-shrink-0">
-            <div v-if="fotoPreview || profile?.foto"
-              class="w-14 h-14 rounded-full overflow-hidden border-2 border-primary-200 dark:border-primary-800">
-              <img :src="fotoPreview || profile?.foto" class="w-full h-full object-cover" />
-            </div>
-            <div v-else
-              class="w-14 h-14 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-primary-600 dark:text-primary-300 text-xl font-bold">
-              {{ profile?.nama?.charAt(0)?.toUpperCase() || 'G' }}
-            </div>
-            <label class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-primary-500 hover:bg-primary-600 flex items-center justify-center cursor-pointer shadow-sm border-2 border-white dark:border-slate-700">
-              <input type="file" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" class="sr-only" @change="handleFotoSelect" />
-              <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </label>
+    <!-- Header Profil -->
+    <BaseCard class="text-center">
+      <div class="flex flex-col items-center">
+        <div>
+          <div v-if="fotoPreview || profile?.foto"
+            class="w-24 h-24 rounded-full overflow-hidden border-2 border-primary-200 dark:border-primary-800 shadow-md">
+            <img :src="fotoPreview || profile?.foto" class="w-full h-full object-cover" />
           </div>
-          <div>
-            <h2 class="font-semibold text-gray-900 dark:text-gray-100">{{ profile?.nama || '-' }}</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400">PTK — {{ profile?.nip || 'Belum ada NIP' }}</p>
-            <div v-if="profile?.waliKelas && profile.waliKelas.length > 0" class="flex flex-wrap gap-1 mt-1.5">
-              <span v-for="k in profile.waliKelas" :key="k.id"
-                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">
-                Wali {{ k.nama }}
-              </span>
-            </div>
-            <button v-if="fotoPreview || form.foto" type="button" @click="removeFoto"
-              class="mt-1 text-[11px] text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
-              Hapus foto
-            </button>
+          <div v-else
+            class="w-24 h-24 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-primary-700 dark:text-primary-300 text-4xl font-bold">
+            {{ profile?.nama?.charAt(0)?.toUpperCase() || 'G' }}
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <BaseFormField label="Nama Lengkap" required>
-            <input v-model="form.nama" type="text"
-              class="w-full px-3.5 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg text-sm dark:bg-slate-700 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
-           </BaseFormField>
-           <BaseFormField label="NIP">
-             <input :value="profile?.nip || '-'" type="text" disabled
-               class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-600 rounded-lg text-sm bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-400 cursor-not-allowed" />
-          </BaseFormField>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <BaseFormField label="Email" required>
-            <input v-model="form.email" type="email"
-              class="w-full px-3.5 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg text-sm dark:bg-slate-700 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
-           </BaseFormField>
-           <BaseFormField label="Role">
-             <input :value="profile?.role || '-'" type="text" disabled
-               class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-600 rounded-lg text-sm bg-gray-50 dark:bg-slate-700 text-gray-500 dark:text-gray-400 cursor-not-allowed" />
-          </BaseFormField>
-        </div>
+        <h2 class="mt-3 text-lg font-bold text-gray-900 dark:text-gray-100">{{ profile?.nama || '-' }}</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400">PTK · {{ profile?.role || '-' }}</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500">NIP: {{ profile?.nip || '-' }}</p>
 
-        <div class="flex justify-end pt-4 border-t border-gray-200 dark:border-slate-700">
-          <button type="submit" :disabled="saving"
-            class="px-6 py-2.5 bg-primary-500 text-sm font-medium text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 inline-flex items-center gap-2 shadow-sm">
-            <svg v-if="saving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-            Simpan Perubahan
-          </button>
+        <button
+          type="button"
+          @click="openEditModal"
+          class="mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 rounded-full shadow-md shadow-primary-500/30 transition-colors"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+          Ganti Profil
+        </button>
+      </div>
+    </BaseCard>
+
+    <!-- Wali Kelas -->
+    <BaseCard class="mt-6">
+      <div class="flex items-center gap-2 mb-4">
+        <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+        <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Wali Kelas</h3>
+      </div>
+
+      <div v-if="profile?.waliKelas && profile.waliKelas.length > 0" class="divide-y-[0.5px] divide-gray-100 dark:divide-slate-700/60">
+        <div v-for="k in profile.waliKelas" :key="k.id" class="flex items-center gap-3 py-3">
+          <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center text-gray-400 dark:text-gray-500 flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ k.nama }}</p>
+            <p class="text-xs text-gray-400 dark:text-gray-500">Kelas</p>
+          </div>
+          <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">Wali</span>
         </div>
-      </form>
+      </div>
+      <p v-else class="text-sm text-gray-500 dark:text-gray-400">Bukan wali kelas.</p>
     </BaseCard>
 
     <!-- Ubah Password -->
@@ -298,5 +306,52 @@ async function handleChangePassword() {
         </div>
       </form>
     </BaseCard>
+
+    <!-- Modal Ganti Profil -->
+    <BaseModal :show="showEditModal" title="Ganti Profil" @close="closeEditModal" max-w="max-w-lg">
+      <form @submit.prevent="handleSave" class="space-y-5">
+        <div class="flex flex-col items-center gap-2">
+          <div class="relative">
+            <div v-if="fotoPreview || form.foto"
+              class="w-24 h-24 rounded-full overflow-hidden border-2 border-primary-200 dark:border-primary-800 shadow-md">
+              <img :src="fotoPreview || form.foto" class="w-full h-full object-cover" />
+            </div>
+            <div v-else
+              class="w-24 h-24 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-primary-700 dark:text-primary-300 text-3xl font-bold">
+              {{ profile?.nama?.charAt(0)?.toUpperCase() || 'G' }}
+            </div>
+            <label class="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary-500 hover:bg-primary-600 flex items-center justify-center cursor-pointer shadow-md border-2 border-white dark:border-slate-700 transition-colors">
+              <input type="file" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" class="sr-only" @change="handleFotoSelect" />
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </label>
+          </div>
+          <button v-if="fotoPreview || form.foto" type="button" @click="removeFoto"
+            class="text-[11px] text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">
+            Hapus foto
+          </button>
+        </div>
+
+        <BaseFormField label="Nama Lengkap" required>
+          <input v-model="form.nama" type="text"
+            class="w-full px-3.5 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
+        </BaseFormField>
+        <BaseFormField label="Email (Akun Login)" required>
+          <input v-model="form.email" type="email"
+            class="w-full px-3.5 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500" />
+        </BaseFormField>
+      </form>
+      <template #footer>
+        <button type="button" @click="closeEditModal"
+          class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg">{{ 'Batal' }}</button>
+        <button type="submit" @click="handleSave" :disabled="saving"
+          class="px-5 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 disabled:opacity-50 inline-flex items-center gap-2 shadow-sm">
+          <svg v-if="saving || fotoUploading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+          {{ saving || fotoUploading ? 'Menyimpan...' : 'Simpan' }}
+        </button>
+      </template>
+    </BaseModal>
   </PTKLayout>
 </template>

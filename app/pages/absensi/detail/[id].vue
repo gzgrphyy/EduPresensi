@@ -86,7 +86,7 @@ watch(totalPages, () => { if (page.value > totalPages.value) page.value = totalP
 
 <template>
   <PTKLayout>
-    <PageHeader title="Detail Absensi" description="Perincian kehadiran murid per sesi" back-to="/absensi/rekap" />
+    <PageHeader title="Detail Absensi" description="Perincian kehadiran murid per sesi" back-to="/absensi/riwayat" />
 
     <LoadingSkeleton v-if="pending" type="table" :rows="5" :columns="5" />
 

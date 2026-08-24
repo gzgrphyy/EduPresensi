@@ -1,17 +1,4 @@
 <script setup lang="ts">
-interface JadwalHariIni {
-  id: number
-  mapel: string
-  jamMulai: string
-  jamSelesai: string
-  hari: string
-  isWithinTime: boolean
-  activeSesi: { id: number; status: string } | null
-  todaySesi: { id: number; status: string } | null
-  kelas: { id: number; nama: string }
-  ruangan: { id: number; nama: string; qrCode: string }
-}
-
 interface ActiveSesi {
   id: number
   status: string
@@ -37,10 +24,19 @@ interface MingguanJadwal {
   ruangan: { id: number; nama: string }
 }
 
-const { user } = useUserSession()
-const { adaJadwal } = useJadwalHariIni()
+interface RiwayatSesi {
+  id: number
+  tanggal: string
+  mapel: string
+  kelas: string
+  ruangan: string
+  status: string
+  totalSiswa: number
+  hadir: number
+}
 
-const jadwal = ref<JadwalHariIni[]>([])
+const { user } = useUserSession()
+
 const activeSesiList = ref<ActiveSesi[]>([])
 const loading = ref(true)
 const errorMsg = ref('')
@@ -48,6 +44,16 @@ const successMsg = ref('')
 const closingSesi = ref<number | null>(null)
 const confirmClose = ref<ActiveSesi | null>(null)
 const pendingIzinCount = ref(0)
+
+const { data: riwayatData } = useFetch<RiwayatSesi[]>('/api/absensi/riwayat', {
+  immediate: true
+})
+
+const riwayatTerakhir = computed(() => (riwayatData.value || []).slice(0, 5))
+
+function formatTanggal(iso: string) {
+  return new Date(iso).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })
+}
 
 const { data: jadwalMingguan } = useFetch<{ hariOrder: string[]; grouped: Record<string, MingguanJadwal[]> }>('/api/absensi/jadwal-mingguan', {
   immediate: true
@@ -72,21 +78,6 @@ const greeting = computed(() => {
   return 'Selamat malam'
 })
 
-const isWeekend = computed(() => {
-  const d = new Date().getDay()
-  return d === 0 || d === 6
-})
-
-const emptyState = computed(() => {
-  if (jadwal.value.length === 0 && isWeekend.value) {
-    return { title: 'Hari ini libur.', cta: 'Lihat Rekap', to: '/absensi/rekap' }
-  }
-  if (jadwal.value.length === 0) {
-    return { title: 'Tidak ada kelas hari ini.', cta: 'Lihat Rekap', to: '/absensi/rekap' }
-  }
-  return null
-})
-
 function showError(msg: string) {
   errorMsg.value = msg
   setTimeout(() => { errorMsg.value = '' }, 5000)
@@ -99,12 +90,7 @@ function showSuccess(msg: string) {
 
 async function fetchData() {
   try {
-    const [j, a] = await Promise.all([
-      $fetch<JadwalHariIni[]>('/api/absensi/jadwal-hari-ini'),
-      $fetch<ActiveSesi[]>('/api/absensi/sesi/aktif')
-    ])
-    jadwal.value = j
-    activeSesiList.value = a
+    activeSesiList.value = await $fetch<ActiveSesi[]>('/api/absensi/sesi/aktif')
   } catch (err: any) {
     showError(err?.data?.statusMessage || 'Gagal memuat data')
   } finally {
@@ -139,11 +125,9 @@ async function tutupSesi(id: number) {
 onMounted(() => {
   fetchData()
   fetchPendingIzin()
-  const { refresh: refreshJadwal } = useJadwalHariIni()
   const interval = setInterval(() => {
     fetchData()
     fetchPendingIzin()
-    refreshJadwal()
   }, 30000)
   onUnmounted(() => clearInterval(interval))
 })
@@ -167,7 +151,7 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
     <!-- Scan QR Ruangan -->
     <NuxtLink
       to="/absensi/scan"
-      class="mb-4 group flex items-center gap-4 rounded-2xl border border-primary-200 dark:border-primary-800 border-l-4 border-l-primary-500 bg-primary-50/70 dark:bg-primary-900/20 p-4 transition-colors hover:bg-primary-100 dark:hover:bg-primary-900/30"
+      class="mb-4 group flex items-center gap-4 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card dark:shadow-dark-card p-4 transition-colors hover:border-primary-200 dark:hover:border-primary-700"
     >
       <div class="flex-shrink-0">
         <span class="w-11 h-11 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
@@ -177,10 +161,10 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
         </span>
       </div>
       <div class="flex-1 min-w-0">
-        <p class="text-sm font-bold text-primary-800 dark:text-primary-300">Scan QR Ruangan</p>
-        <p class="text-xs text-primary-700/80 dark:text-primary-400/80 mt-0.5">Catat kehadiran PTK di ruangan</p>
+        <p class="text-sm font-bold text-gray-900 dark:text-gray-100">Scan QR Ruangan</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Catat kehadiran PTK di ruangan</p>
       </div>
-      <svg class="w-4 h-4 text-primary-500 flex-shrink-0 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="w-4 h-4 text-gray-300 dark:text-slate-500 flex-shrink-0 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
     </NuxtLink>
@@ -188,7 +172,7 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
     <!-- Pengajuan Izin -->
     <NuxtLink
       to="/absensi/izin"
-      class="mb-4 group flex items-center gap-4 rounded-2xl border border-amber-200 dark:border-amber-800 border-l-4 border-l-amber-400 bg-amber-50/70 dark:bg-amber-900/20 p-4 transition-colors hover:bg-amber-100 dark:hover:bg-amber-900/30"
+      class="mb-4 group flex items-center gap-4 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card dark:shadow-dark-card p-4 transition-colors hover:border-primary-200 dark:hover:border-primary-700"
     >
       <div class="relative flex-shrink-0">
         <span class="w-11 h-11 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
@@ -201,12 +185,12 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
         </span>
       </div>
       <div class="flex-1 min-w-0">
-        <p class="text-sm font-bold text-amber-800 dark:text-amber-300">Pengajuan Izin / Sakit</p>
-        <p class="text-xs text-amber-700/80 dark:text-amber-400/80 mt-0.5">
+        <p class="text-sm font-bold text-gray-900 dark:text-gray-100">Pengajuan Izin / Sakit</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
           {{ pendingIzinCount > 0 ? `Ada ${pendingIzinCount} pengajuan menunggu persetujuan` : 'Lihat riwayat izin/sakit murid' }}
         </p>
       </div>
-      <svg class="w-4 h-4 text-amber-500 flex-shrink-0 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="w-4 h-4 text-gray-300 dark:text-slate-500 flex-shrink-0 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
     </NuxtLink>
@@ -290,7 +274,7 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
             {{ totalJadwalMinggu > 0 ? `${totalJadwalMinggu} sesi · ${jumlahHariMinggu} hari` : 'Belum ada' }}
           </p>
           <NuxtLink
-            to="/absensi/rekap#jadwal-minggu"
+            to="/absensi/jadwal#jadwal-minggu"
             class="mt-2 self-start inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/40 ring-1 ring-primary-200 dark:ring-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/60 transition-colors"
           >
             Lihat
@@ -301,71 +285,38 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
         </div>
       </div>
 
-      <!-- Today's schedule -->
-      <section id="jadwal-hari-ini" class="mt-5">
-        <h2 class="text-base font-bold text-gray-900 dark:text-gray-100 tracking-tight">Jadwal Hari Ini</h2>
+      <!-- Riwayat Terakhir -->
+      <section class="mt-4 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-card dark:shadow-dark-card overflow-hidden">
+        <header class="px-5 pt-4 pb-2 flex items-center justify-between">
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Riwayat Terakhir</h3>
+          <NuxtLink to="/absensi/riwayat" class="text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300">
+            Lihat Semua
+          </NuxtLink>
+        </header>
 
-        <div
-          v-if="jadwal.length === 0"
-          class="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card py-8 px-6 text-center"
-        >
-          <p class="text-base font-bold text-gray-900 dark:text-gray-100">{{ emptyState?.title }}</p>
+        <div v-if="riwayatTerakhir.length > 0" class="divide-y divide-gray-50 dark:divide-slate-700/60">
           <NuxtLink
-            :to="emptyState?.to || '/absensi/rekap'"
-            class="inline-flex items-center gap-1.5 mt-4 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 active:bg-primary-700 transition-colors shadow-md shadow-primary-500/30"
+            v-for="item in riwayatTerakhir"
+            :key="item.id"
+            to="/absensi/riwayat"
+            class="flex items-center gap-3 px-5 py-3 active:bg-gray-50 dark:active:bg-slate-700/40 transition-colors"
           >
-            {{ emptyState?.cta }}
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+            <span class="w-2 h-2 rounded-full flex-shrink-0" :class="item.status === 'SELESAI' ? 'bg-green-500' : 'bg-primary-500'"></span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ item.mapel }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ formatTanggal(item.tanggal) }} — {{ item.kelas }} · {{ item.ruangan }}</p>
+            </div>
+            <span class="flex-shrink-0 text-xs font-semibold text-gray-500 dark:text-gray-400">
+              {{ item.hadir }}/{{ item.totalSiswa }} Hadir
+            </span>
           </NuxtLink>
         </div>
-
-        <div
-          v-else
-          class="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card dark:shadow-dark-card overflow-hidden divide-y divide-gray-100 dark:divide-slate-700"
-        >
-          <div
-            v-for="j in jadwal"
-            :key="j.id"
-            class="flex items-center gap-3 px-4 py-3.5"
-            :class="!j.todaySesi && j.isWithinTime ? 'border-l-2 border-l-primary-500 bg-primary-50/40 dark:bg-primary-900/20' : (j.activeSesi ? 'bg-primary-50/30 dark:bg-primary-900/10' : '')"
-          >
-            <div class="w-14 flex-shrink-0 text-center">
-              <p class="text-[13px] font-bold text-gray-900 dark:text-gray-100 leading-none">{{ j.jamMulai }}</p>
-              <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 leading-none">{{ j.jamSelesai }}</p>
-              <p v-if="j.isWithinTime && !j.todaySesi" class="text-[9px] font-bold text-primary-600 dark:text-primary-400 mt-1 leading-none animate-pulse">Scan</p>
-              <p v-else-if="j.todaySesi?.status === 'SELESAI'" class="text-[9px] font-bold text-gray-400 dark:text-gray-500 mt-1 leading-none">Selesai</p>
-            </div>
-
-            <div class="min-w-0 flex-1">
-              <h3 class="font-semibold text-gray-900 dark:text-gray-100 truncate">{{ j.mapel }}</h3>
-              <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ j.kelas.nama }} · {{ j.ruangan.nama }}</p>
-            </div>
-
-            <NuxtLink
-              v-if="j.activeSesi"
-              :to="`/absensi/sesi/${j.activeSesi.id}`"
-              class="flex-shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-primary-500 hover:bg-primary-600 active:bg-primary-700 inline-flex items-center gap-1 transition-colors shadow-sm shadow-primary-500/30"
-            >
-              Konfirmasi
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-            </NuxtLink>
-            <NuxtLink
-              v-else-if="j.todaySesi?.status === 'SELESAI'"
-              :to="`/absensi/sesi/${j.todaySesi.id}`"
-              class="flex-shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-slate-700/60 ring-1 ring-gray-200 dark:ring-slate-600 inline-flex items-center gap-1 hover:bg-gray-200 dark:hover:bg-slate-600/60 transition-colors"
-            >
-              Lihat
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-            </NuxtLink>
-            <NuxtLink
-              v-else-if="j.isWithinTime"
-              to="/absensi/scan"
-              class="flex-shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/40 ring-1 ring-primary-200 dark:ring-primary-800 inline-flex items-center gap-1 hover:bg-primary-100 dark:hover:bg-primary-900/60 transition-colors"
-            >
-              Scan QR
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-            </NuxtLink>
-          </div>
+        <div v-else class="py-10 px-5 text-center">
+          <svg class="w-10 h-10 text-gray-300 dark:text-slate-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Belum ada riwayat absensi</p>
+          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Scan QR saat sesi kelas untuk memulai</p>
         </div>
       </section>
     </template>
