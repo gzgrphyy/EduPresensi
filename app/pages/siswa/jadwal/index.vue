@@ -31,18 +31,22 @@ const todayLabel = computed(() =>
   new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 )
 
-const activeDay = ref('')
+const selectedDay = ref('')
 
-function toggleDay(hari: string) {
-  activeDay.value = activeDay.value === hari ? '' : hari
-}
+const availableDays = computed(() =>
+  data.value ? data.value.hariOrder.filter(h => data.value!.grouped[h]) : []
+)
+
+const selectedItems = computed(() =>
+  data.value?.grouped[selectedDay.value] || []
+)
 
 onMounted(() => {
   if (data.value?.grouped) {
     if (data.value.grouped[todayHari.value]) {
-      activeDay.value = todayHari.value
+      selectedDay.value = todayHari.value
     } else {
-      activeDay.value = data.value.hariOrder.find(h => data.value!.grouped[h]) || ''
+      selectedDay.value = data.value.hariOrder.find(h => data.value!.grouped[h]) || ''
     }
   }
 })
@@ -62,43 +66,63 @@ onMounted(() => {
         Hari ini &middot; {{ todayLabel }}
       </div>
 
-      <div class="space-y-3">
-        <div v-for="hari in data.hariOrder" :key="hari">
-          <div v-if="data.grouped[hari]" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-card dark:shadow-dark-card overflow-hidden">
-            <button @click="toggleDay(hari)"
-              class="w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors hover:bg-gray-50 dark:hover:bg-slate-700/50"
-              :class="{
-                'border-b border-gray-100 dark:border-slate-700': activeDay === hari,
-                'bg-primary-50 dark:bg-primary-900/20': hari === todayHari
-              }">
-              <div class="flex items-center gap-3">
-                <div v-if="hari === todayHari" class="inline-flex items-center px-1.5 py-0.5 rounded-full bg-primary-500 text-white text-[10px] font-semibold leading-none">Hari ini</div>
-                <div v-else class="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-                <span class="font-semibold text-gray-900 dark:text-gray-100 w-16 shrink-0">{{ hariLabel[hari] || hari }}</span>
-                <span class="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">{{ data.grouped[hari].length }} mapel</span>
-              </div>
-              <svg class="w-4 h-4 text-gray-400 transition-transform duration-200" :class="{ 'rotate-180': activeDay === hari }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+      <div class="sticky top-0 z-10 -mx-4 px-4 py-2 bg-[#FEFEFE]/95 dark:bg-slate-900/95 backdrop-blur">
+        <div class="flex gap-2 overflow-x-auto scrollbar-hide">
+          <button
+            v-for="hari in availableDays"
+            :key="hari"
+            @click="selectedDay = hari"
+            class="flex-shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-colors"
+            :class="selectedDay === hari
+              ? 'bg-primary-500 text-white shadow-sm'
+              : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700'"
+          >
+            <span v-if="hari === todayHari && selectedDay !== hari" class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+            {{ hariLabel[hari] || hari }}
+          </button>
+        </div>
+      </div>
 
-            <div v-show="activeDay === hari" class="divide-y divide-gray-50 dark:divide-slate-700/50">
-              <div v-for="item in data.grouped[hari]" :key="item.id"
-                class="px-5 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors">
-                <div class="flex items-start gap-4 min-w-0">
-                  <div class="text-center flex-shrink-0 w-14">
-                    <p class="text-xs font-bold text-gray-900 dark:text-gray-100">{{ item.jamMulai }}</p>
-                    <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">{{ item.jamSelesai }}</p>
-                  </div>
-                  <div class="min-w-0">
-                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ item.mapel }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">{{ item.ruangan.nama }} &middot; {{ item.guru.nama }}</p>
-                  </div>
-                </div>
-                <BaseBadge variant="primary" size="sm" class="flex-shrink-0 ml-2">{{ item.ruangan.nama }}</BaseBadge>
+      <div v-if="selectedItems.length > 0" class="space-y-2.5 mt-2">
+        <div
+          v-for="item in selectedItems"
+          :key="item.id"
+          class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-card dark:shadow-dark-card overflow-hidden flex transition-colors"
+          :class="{ 'ring-1 ring-primary-400 dark:ring-primary-500': selectedDay === todayHari }"
+        >
+          <div class="w-1.5 flex-shrink-0 bg-primary-500"></div>
+          <div class="flex-1 min-w-0 px-4 py-3.5 flex items-start gap-4">
+            <div class="text-center flex-shrink-0 w-14 pt-0.5">
+              <p class="text-sm font-bold text-gray-900 dark:text-gray-100 leading-tight">{{ item.jamMulai }}</p>
+              <p class="text-[10px] text-gray-400 dark:text-gray-500 leading-tight mt-0.5">{{ item.jamSelesai }}</p>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ item.mapel }}</p>
+              <div class="flex items-center gap-1 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                <svg class="w-3.5 h-3.5 flex-shrink-0 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span class="truncate">{{ item.ruangan.nama }}</span>
+                <span class="text-gray-300 dark:text-gray-600">&middot;</span>
+                <svg class="w-3.5 h-3.5 flex-shrink-0 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span class="truncate">{{ item.guru.nama }}</span>
               </div>
             </div>
+            <BaseBadge variant="primary" size="sm" class="flex-shrink-0 ml-1 mt-0.5">{{ item.ruangan.nama }}</BaseBadge>
           </div>
+        </div>
+      </div>
+
+      <div v-else class="bg-white dark:bg-slate-800 rounded-xl border border-dashed border-gray-300 dark:border-slate-600 mt-2">
+        <div class="flex flex-col items-center py-10 px-4">
+          <svg class="w-10 h-10 text-gray-300 dark:text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Tidak ada jadwal {{ hariLabel[selectedDay] || '' }}</p>
+          <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Pilih hari lain di atas</p>
         </div>
       </div>
     </template>

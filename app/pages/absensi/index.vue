@@ -156,7 +156,7 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
     <!-- Greeting -->
     <header class="mb-5">
       <p class="text-xs font-medium text-gray-400 dark:text-gray-500">{{ todayLabel }}</p>
-      <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 mt-1">
+      <h1 class="text-xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100 mt-1">
         {{ greeting }}, {{ user?.nama || 'Pak/Bu' }}
       </h1>
     </header>

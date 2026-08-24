@@ -411,13 +411,13 @@ const rataPersentase = computed(() => {
         <!-- Container 1: Total Murid -->
         <div class="bg-white dark:bg-slate-800 rounded-xl border admin-accent-border p-4">
           <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ t('admin.rekap.statTotalMurid') }}</p>
-          <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ totalSiswa }}</p>
+          <p class="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ totalSiswa }}</p>
         </div>
 
         <!-- Container 2: Rata-rata Kehadiran -->
         <div class="bg-white dark:bg-slate-800 rounded-xl border admin-accent-border p-4">
           <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ t('admin.rekap.statRata') }}</p>
-          <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ rataPersentase }}%</p>
+          <p class="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ rataPersentase }}%</p>
         </div>
 
         <!-- Container 3: Menunggu Persetujuan -->
@@ -428,7 +428,7 @@ const rataPersentase = computed(() => {
               Perlu Review
             </span>
           </div>
-          <p class="text-2xl font-bold mt-1" :class="totalPending > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-gray-100'">
+          <p class="text-xl font-bold mt-1" :class="totalPending > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-gray-100'">
             {{ totalPending }}
           </p>
         </div>

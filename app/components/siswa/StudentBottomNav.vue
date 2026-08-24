@@ -9,7 +9,7 @@ const items = [
   { label: 'Beranda', to: '/siswa', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
   { label: 'Riwayat', to: '/siswa/riwayat', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
   { label: 'Scan', to: '/siswa/scan', fab: true },
-  { label: 'Izin', to: '/siswa/izin', icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' },
+  { label: 'Jadwal', to: '/siswa/jadwal', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
   { label: 'Profil', to: '/siswa/profil', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z', avatar: true }
 ]
 
@@ -30,7 +30,7 @@ function isActive(to: string) {
         class="absolute left-1/2 -top-8 -translate-x-1/2 z-10 focus:outline-none"
       >
         <span
-          class="w-16 h-16 rounded-full bg-accent-500 text-primary-900 flex flex-col items-center justify-center gap-0.5 shadow-xl shadow-accent-500/50 ring-4 transition-transform duration-150 hover:scale-105 active:scale-95"
+          class="w-16 h-16 rounded-full bg-accent-500 text-primary-900 flex flex-col items-center justify-center gap-0.5 shadow-xl shadow-accent-500/50 ring-4 transition-transform duration-150 hover:scale-105 active:scale-95 "
           :class="isActive('/siswa/scan') ? 'ring-primary-100 dark:ring-primary-900' : 'ring-white dark:ring-slate-900'"
         >
           <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,13 +92,12 @@ function isActive(to: string) {
                     v-if="user?.foto"
                     :src="user.foto"
                     :alt="user?.nama || 'Profil'"
-                    class="w-6 h-6 rounded-full object-cover transition-all"
-                    :class="isActive(item.to) ? '' : 'opacity-60 grayscale'"
+                    class="w-6 h-6 rounded-full object-cover"
                   />
                   <span
                     v-else
                     class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors"
-                    :class="isActive(item.to) ? 'bg-primary-500 text-white' : 'bg-gray-200 dark:bg-slate-600 text-gray-400 dark:text-gray-500'"
+                    :class="isActive(item.to) ? 'bg-primary-500 text-white' : 'bg-primary-500/15 text-primary-600 dark:text-primary-400'"
                   >
                     {{ (user?.nama || 'P').charAt(0).toUpperCase() }}
                   </span>
