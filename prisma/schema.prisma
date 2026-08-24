@@ -87,6 +87,7 @@ model User {
   sesiPtkScan     SesiAbsensi[]     @relation("PtkScanner")
   approvedRequests AbsensiRequest[] @relation("ApprovedOleh")
   tanggapanIzin   Izin[]            @relation("PenanggapIzin")
+  exportHistories ExportHistory[]   @relation("ExportUser")
   siswa           Siswa?
 
   @@map("users")
@@ -309,4 +310,22 @@ model Izin {
 
   @@unique([siswaId, tanggal])
   @@map("izin")
+}
+
+model ExportHistory {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  jenis       String   @db.VarChar(50)
+  judul       String   @db.VarChar(100)
+  filterJson  String   @map("filter_json") @db.Text
+  filterLabel String   @map("filter_label") @db.VarChar(255)
+  format      String   @db.VarChar(10)
+  fileName    String   @map("file_name") @db.VarChar(255)
+  filePath    String?  @map("file_path") @db.VarChar(255)
+  fileSize    Int?     @map("file_size")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation("ExportUser", fields: [userId], references: [id])
+
+  @@map("export_history")
 }
