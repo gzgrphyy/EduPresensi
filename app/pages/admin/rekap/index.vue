@@ -3,6 +3,7 @@ interface RekapItem {
   kelasId: number
   kelas: string
   totalSiswa: number
+  totalSesi?: number
   hadir: number
   sakit: number
   izin: number
@@ -347,9 +348,11 @@ const totalSakit = computed(() => displayData.value.reduce((a, b) => a + b.sakit
 const totalIzin = computed(() => displayData.value.reduce((a, b) => a + b.izin, 0))
 const totalAlpha = computed(() => displayData.value.reduce((a, b) => a + b.alpha, 0))
 const totalPending = computed(() => displayData.value.reduce((a, b) => a + b.pending, 0))
-const rataPersentase = computed(() =>
-  displayData.value.length ? (displayData.value.reduce((a, b) => a + b.persentase, 0) / displayData.value.length).toFixed(1) : 0
-)
+const rataPersentase = computed(() => {
+  if (!displayData.value.length) return 0
+  const sumPersentase = displayData.value.reduce((a, b) => a + b.persentase, 0)
+  return (sumPersentase / displayData.value.length).toFixed(1)
+})
 </script>
 
 <template>
@@ -400,17 +403,46 @@ const rataPersentase = computed(() =>
       </button>
     </div>
 
-    <LoadingSkeleton v-if="pending" type="table" :rows="6" :columns="9" />
+    <LoadingSkeleton v-if="pending" type="table" :rows="6" :columns="8" />
 
     <template v-else>
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 mb-5">
-        <StatCard :label="t('admin.rekap.statTotalMurid')" :value="totalSiswa" variant="blue" />
-        <StatCard :label="t('admin.rekap.statHadir')" :value="totalHadir" variant="green" />
-        <StatCard :label="t('admin.rekap.statPending')" :value="totalPending" variant="gray" />
-        <StatCard :label="t('admin.rekap.statSakit')" :value="totalSakit" variant="amber" />
-        <StatCard :label="t('admin.rekap.statIzin')" :value="totalIzin" variant="blue" />
-        <StatCard :label="t('admin.rekap.statAlpha')" :value="totalAlpha" variant="red" />
-        <StatCard :label="t('admin.rekap.statRata')" :value="rataPersentase + '%'" variant="green" />
+      <!-- 3 Summary Containers -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-3">
+        <!-- Container 1: Total Murid -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl border admin-accent-border p-4">
+          <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ t('admin.rekap.statTotalMurid') }}</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ totalSiswa }}</p>
+        </div>
+
+        <!-- Container 2: Rata-rata Kehadiran -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl border admin-accent-border p-4">
+          <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ t('admin.rekap.statRata') }}</p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ rataPersentase }}%</p>
+        </div>
+
+        <!-- Container 3: Menunggu Persetujuan -->
+        <div class="bg-white dark:bg-slate-800 rounded-xl border admin-accent-border p-4">
+          <div class="flex items-center justify-between">
+            <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">{{ t('admin.rekap.statPending') }}</p>
+            <span v-if="totalPending > 0" class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300">
+              Perlu Review
+            </span>
+          </div>
+          <p class="text-2xl font-bold mt-1" :class="totalPending > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-900 dark:text-gray-100'">
+            {{ totalPending }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Breakdown Text Only -->
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400 mb-5 px-1">
+        <span>{{ t('admin.rekap.statHadir') }} <strong class="font-semibold text-gray-800 dark:text-gray-200">{{ totalHadir }}</strong></span>
+        <span class="text-gray-300 dark:text-slate-600">·</span>
+        <span>{{ t('admin.rekap.statSakit') }} <strong class="font-semibold text-gray-800 dark:text-gray-200">{{ totalSakit }}</strong></span>
+        <span class="text-gray-300 dark:text-slate-600">·</span>
+        <span>{{ t('admin.rekap.statIzin') }} <strong class="font-semibold text-gray-800 dark:text-gray-200">{{ totalIzin }}</strong></span>
+        <span class="text-gray-300 dark:text-slate-600">·</span>
+        <span>{{ t('admin.rekap.statAlpha') }} <strong class="font-semibold" :class="totalAlpha > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'">{{ totalAlpha }}</strong></span>
       </div>
 
       <BaseCard>
@@ -421,7 +453,6 @@ const rataPersentase = computed(() =>
                 <th class="text-left px-4 py-3 text-gray-600 dark:text-gray-300 text-xs tracking-wider">{{ t('admin.rekap.colKelas') }}</th>
                 <th class="text-center px-4 py-3 text-gray-600 dark:text-gray-300 text-xs tracking-wider">{{ t('admin.rekap.colTotalMurid') }}</th>
                 <th class="text-center px-4 py-3 text-gray-600 dark:text-gray-300 text-xs tracking-wider">{{ t('admin.rekap.colHadir') }}</th>
-                <th class="text-center px-4 py-3 text-gray-600 dark:text-gray-300 text-xs tracking-wider">{{ t('admin.rekap.colPending') }}</th>
                 <th class="text-center px-4 py-3 text-gray-600 dark:text-gray-300 text-xs tracking-wider">{{ t('admin.rekap.colSakit') }}</th>
                 <th class="text-center px-4 py-3 text-gray-600 dark:text-gray-300 text-xs tracking-wider">{{ t('admin.rekap.colIzin') }}</th>
                 <th class="text-center px-4 py-3 text-gray-600 dark:text-gray-300 text-xs tracking-wider">{{ t('admin.rekap.colAlpha') }}</th>
@@ -433,19 +464,20 @@ const rataPersentase = computed(() =>
               <tr v-for="item in visibleData" :key="item.kelas" class="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors">
                 <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{{ item.kelas }}</td>
                 <td class="px-4 py-3 text-center text-gray-700 dark:text-gray-300">{{ item.totalSiswa }}</td>
-                <td class="px-4 py-3 text-center text-green-600 dark:text-green-400 font-semibold">{{ item.hadir }}</td>
-                <td class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">{{ item.pending }}</td>
-                <td class="px-4 py-3 text-center text-amber-600 dark:text-amber-400 font-medium">{{ item.sakit }}</td>
-                <td class="px-4 py-3 text-center text-blue-600 dark:text-blue-400 font-medium">{{ item.izin }}</td>
-                <td class="px-4 py-3 text-center text-red-600 dark:text-red-400 font-medium">{{ item.alpha }}</td>
-                <td class="px-4 py-3 text-center font-bold" :class="item.persentase >= 90 ? 'text-green-600 dark:text-green-400' : item.persentase >= 75 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'">{{ item.persentase }}%</td>
+                <td class="px-4 py-3 text-center text-gray-700 dark:text-gray-300 font-medium">{{ item.hadir }}</td>
+                <td class="px-4 py-3 text-center text-gray-700 dark:text-gray-300">{{ item.sakit }}</td>
+                <td class="px-4 py-3 text-center text-gray-700 dark:text-gray-300">{{ item.izin }}</td>
+                <td class="px-4 py-3 text-center" :class="item.alpha > 0 ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-gray-700 dark:text-gray-300'">
+                  {{ item.alpha }}
+                </td>
+                <td class="px-4 py-3 text-center text-gray-900 dark:text-gray-100 font-semibold">{{ item.persentase }}%</td>
                 <td class="px-4 py-3 text-center">
                   <button
                     @click="openDetailModal(item)"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-md border border-blue-200 dark:border-blue-800 transition-colors"
+                    class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition-colors"
                     :title="t('admin.rekap.lihatDetail')"
                   >
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
@@ -454,7 +486,7 @@ const rataPersentase = computed(() =>
                 </td>
               </tr>
               <tr v-if="displayData.length === 0">
-                <td colspan="9" class="px-4 py-16 text-center text-gray-400 dark:text-gray-500">
+                <td colspan="8" class="px-4 py-16 text-center text-gray-400 dark:text-gray-500">
                   {{ t('admin.rekap.belumAdaData') }}
                 </td>
               </tr>
@@ -550,52 +582,27 @@ const rataPersentase = computed(() =>
             <div class="flex items-center gap-2">
               <NuxtLink
                 :to="`/admin/kelas/${detailData.kelas.id}`"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors shadow-sm"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors shadow-sm"
               >
                 {{ t('admin.rekap.bukaHalamanKelas') }}
               </NuxtLink>
             </div>
           </div>
 
-          <!-- Pending Notification Strip (Khusus jika ada status pending) -->
-          <div
-            v-if="activeSummary.totalPending > 0"
-            class="px-4 py-2.5 bg-amber-50 dark:bg-amber-950/40 border-t border-amber-200/80 dark:border-amber-800/60 flex items-center justify-between gap-3 text-xs"
-          >
-            <div class="flex items-center gap-2.5 text-amber-900 dark:text-amber-200">
-              <span class="relative flex h-2 w-2">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-              </span>
-              <span class="font-medium">
-                {{ t('admin.rekap.pendingAlert', { count: activeSummary.totalPending }) }}
-              </span>
-            </div>
-            <button
-              @click="activeTab = 'murid'"
-              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold text-amber-800 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/50 hover:bg-amber-200 dark:hover:bg-amber-900/80 transition-colors shadow-xs"
-            >
-              {{ t('admin.rekap.pendingReviewAction') }}
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-
           <!-- Filter Indicator (integrated into header card) -->
           <div class="px-4 py-2 border-t border-gray-200/60 dark:border-slate-600/60 flex items-center justify-between gap-2 text-xs">
-            <div class="flex items-center gap-2 text-blue-900 dark:text-blue-200">
-              <svg class="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+              <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span v-if="selectedDetailMapel && selectedDetailTanggal">
-                {{ t('admin.rekap.sedangMelihatMapel') }} <strong class="font-bold text-blue-700 dark:text-blue-300">{{ selectedDetailMapel }}</strong> pada <strong class="font-bold text-blue-700 dark:text-blue-300">{{ new Date(selectedDetailTanggal + 'T00:00:00').toLocaleDateString('id-ID') }}</strong>
+                {{ t('admin.rekap.sedangMelihatMapel') }} <strong class="font-bold text-gray-900 dark:text-gray-100">{{ selectedDetailMapel }}</strong> pada <strong class="font-bold text-gray-900 dark:text-gray-100">{{ new Date(selectedDetailTanggal + 'T00:00:00').toLocaleDateString('id-ID') }}</strong>
               </span>
               <span v-else-if="selectedDetailMapel">
-                {{ t('admin.rekap.sedangMelihatMapel') }} <strong class="font-bold text-blue-700 dark:text-blue-300">{{ selectedDetailMapel }}</strong>
+                {{ t('admin.rekap.sedangMelihatMapel') }} <strong class="font-bold text-gray-900 dark:text-gray-100">{{ selectedDetailMapel }}</strong>
               </span>
               <span v-else-if="selectedDetailTanggal">
-                Sedang melihat tanggal <strong class="font-bold text-blue-700 dark:text-blue-300">{{ new Date(selectedDetailTanggal + 'T00:00:00').toLocaleDateString('id-ID') }}</strong>
+                Sedang melihat tanggal <strong class="font-bold text-gray-900 dark:text-gray-100">{{ new Date(selectedDetailTanggal + 'T00:00:00').toLocaleDateString('id-ID') }}</strong>
               </span>
               <span v-else>
                 {{ t('admin.rekap.sedangMelihatSemua') }}
@@ -604,7 +611,7 @@ const rataPersentase = computed(() =>
             <button
               v-if="selectedDetailMapel || selectedDetailTanggal"
               @click="selectedDetailMapel = ''; selectedDetailTanggal = ''"
-              class="text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+              class="text-[11px] font-medium text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 flex items-center gap-1"
             >
               Reset filter
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -628,11 +635,9 @@ const rataPersentase = computed(() =>
           </div>
           <div class="text-center">
             <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ t('admin.rekap.statAlpha') }}</p>
-            <p class="text-2xl font-bold text-red-600 dark:text-red-400">{{ activeSummary.totalAlpha }}</p>
-          </div>
-          <div class="text-center">
-            <p class="text-[11px] text-gray-500 dark:text-gray-400">{{ t('admin.rekap.statPending') }}</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ activeSummary.totalPending }}</p>
+            <p class="text-2xl font-bold" :class="activeSummary.totalAlpha > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'">
+              {{ activeSummary.totalAlpha }}
+            </p>
           </div>
         </div>
 
@@ -718,7 +723,6 @@ const rataPersentase = computed(() =>
                 <th class="text-center px-3.5 py-2.5 text-gray-600 dark:text-gray-300 font-semibold">{{ t('admin.rekap.statSakit') }}</th>
                 <th class="text-center px-3.5 py-2.5 text-gray-600 dark:text-gray-300 font-semibold">{{ t('admin.rekap.statIzin') }}</th>
                 <th class="text-center px-3.5 py-2.5 text-gray-600 dark:text-gray-300 font-semibold">{{ t('admin.rekap.statAlpha') }}</th>
-                <th class="text-center px-3.5 py-2.5 text-gray-500 dark:text-gray-400 font-semibold">{{ t('admin.rekap.statPending') }}</th>
                 <th class="text-left px-4 py-2.5 text-gray-600 dark:text-gray-300 font-semibold w-36">% Kehadiran</th>
               </tr>
             </thead>
@@ -736,17 +740,14 @@ const rataPersentase = computed(() =>
                 <td class="px-3.5 py-2.5 text-center text-gray-700 dark:text-gray-300">{{ s.sakit }}</td>
                 <td class="px-3.5 py-2.5 text-center text-gray-700 dark:text-gray-300">{{ s.izin }}</td>
                 <td class="px-3.5 py-2.5 text-center" :class="s.alpha > 0 ? 'text-red-600 dark:text-red-400 font-bold' : 'text-gray-700 dark:text-gray-300'">{{ s.alpha }}</td>
-                <td class="px-3.5 py-2.5 text-center text-gray-500 dark:text-gray-400">{{ s.pending }}</td>
                 <td class="px-4 py-2.5">
-                  <span class="text-xs font-bold"
-                    :class="s.persentase >= 80 ? 'text-green-600 dark:text-green-400' : s.persentase >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'"
-                  >
+                  <span class="text-xs font-semibold text-gray-900 dark:text-gray-100">
                     {{ s.persentase }}%
                   </span>
                 </td>
               </tr>
               <tr v-if="filteredDetailSiswa.length === 0">
-                <td colspan="8" class="px-3 py-8 text-center text-gray-400 dark:text-gray-500">
+                <td colspan="7" class="px-3 py-8 text-center text-gray-400 dark:text-gray-500">
                   {{ t('admin.rekap.emptyMurid') }}
                 </td>
               </tr>
@@ -780,8 +781,8 @@ const rataPersentase = computed(() =>
                 <td class="px-3 py-2.5 text-gray-600 dark:text-gray-300 hidden sm:table-cell">{{ sesi.guru }}</td>
                 <td class="px-3 py-2.5 text-gray-600 dark:text-gray-300 hidden md:table-cell">{{ sesi.ruangan }}</td>
                 <td class="px-3 py-2.5 text-center">
-                  <span class="font-semibold text-green-600 dark:text-green-400">{{ sesi.hadir }}</span> / {{ sesi.totalSiswa }}
-                  <span class="text-[11px] font-bold block" :class="sesi.persentase >= 90 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'">
+                  <span class="font-medium text-gray-900 dark:text-gray-100">{{ sesi.hadir }}</span> / {{ sesi.totalSiswa }}
+                  <span class="text-[11px] text-gray-500 dark:text-gray-400 block">
                     ({{ sesi.persentase }}%)
                   </span>
                 </td>

@@ -177,8 +177,9 @@ export default defineEventHandler(async (event) => {
 
       const rows: string[] = ['Kelas,Wali Kelas,Total Siswa,Total Sesi,Hadir,Sakit,Izin,Alpha,Persentase Kehadiran']
       for (const k of kelasMap.values()) {
-        const persentase = k.totalSiswa > 0
-          ? ((k.hadir / k.totalSiswa) * 100).toFixed(1) + '%'
+        const totalExpected = k.totalSiswa * k.totalSesi
+        const persentase = totalExpected > 0
+          ? ((k.hadir / totalExpected) * 100).toFixed(1) + '%'
           : '0%'
         rows.push([
           `"${k.nama}"`,

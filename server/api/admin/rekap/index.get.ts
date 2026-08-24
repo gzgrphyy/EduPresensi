@@ -88,15 +88,16 @@ export default defineEventHandler(async (event) => {
   }
 
   const result = Array.from(kelasMap.values()).map(k => {
-    const totalScan = k.hadir + k.sakit + k.izin + k.alpha + k.pending
-    const persentase = k.totalSiswa > 0
-      ? Number(((k.hadir / k.totalSiswa) * 100).toFixed(1))
+    const totalExpected = k.totalSiswa * k.totalSesi
+    const persentase = totalExpected > 0
+      ? Number(((k.hadir / totalExpected) * 100).toFixed(1))
       : 0
 
     return {
       kelasId: k.kelasId,
       kelas: k.kelas,
       totalSiswa: k.totalSiswa,
+      totalSesi: k.totalSesi,
       hadir: k.hadir,
       sakit: k.sakit,
       izin: k.izin,
