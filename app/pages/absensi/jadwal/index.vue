@@ -125,7 +125,7 @@ watch(availableHari, (days) => {
                   <span class="truncate">{{ ij.ruangan.nama }}</span>
                 </div>
               </div>
-              <BaseBadge variant="primary" size="sm" class="flex-shrink-0 ml-1 mt-0.5 hidden sm:block">{{ ij.kelas.nama }}</BaseBadge>
+              <span class="text-xs font-medium text-primary-600 dark:text-primary-400 flex-shrink-0 ml-1 mt-0.5 hidden sm:block">{{ ij.kelas.nama }}</span>
             </div>
           </div>
         </div>

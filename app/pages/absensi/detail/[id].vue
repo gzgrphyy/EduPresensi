@@ -110,7 +110,10 @@ watch(totalPages, () => { if (page.value > totalPages.value) page.value = totalP
             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Sesi absensi</p>
             <p class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">{{ sesi.jadwal.mapel }}</p>
           </div>
-          <BaseBadge :variant="sesi.status === 'AKTIF' ? 'green' : 'gray'">{{ sesi.status }}</BaseBadge>
+          <span class="inline-flex items-center gap-1.5 flex-shrink-0">
+            <span class="w-2 h-2 rounded-full flex-shrink-0" :class="sesi.status === 'AKTIF' ? 'bg-green-500' : 'bg-gray-400'"></span>
+            <span class="text-xs text-gray-600 dark:text-gray-400">{{ sesi.status }}</span>
+          </span>
         </div>
 
         <dl class="space-y-1.5 text-sm">

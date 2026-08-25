@@ -148,27 +148,6 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
     <Notification type="error" :message="errorMsg" :show="!!errorMsg" @dismiss="errorMsg = ''" />
     <Notification type="success" :message="successMsg" :show="!!successMsg" @dismiss="successMsg = ''" />
 
-    <!-- Scan QR Ruangan -->
-    <NuxtLink
-      to="/absensi/scan"
-      class="mb-4 group flex items-center gap-4 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card dark:shadow-dark-card p-4 transition-colors hover:border-primary-200 dark:hover:border-primary-700"
-    >
-      <div class="flex-shrink-0">
-        <span class="w-11 h-11 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
-          <svg class="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 7V5a2 2 0 012-2h2m10 0h2a2 2 0 012 2v2m0 10v2a2 2 0 01-2 2h-2m-10 0H5a2 2 0 01-2-2v-2M7 12h4m2 0h.01M7 16h4m2 0h.01M7 8h.01M15 8h.01M15 12h.01M15 16h.01" />
-          </svg>
-        </span>
-      </div>
-      <div class="flex-1 min-w-0">
-        <p class="text-sm font-bold text-gray-900 dark:text-gray-100">Scan QR Ruangan</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Catat kehadiran PTK di ruangan</p>
-      </div>
-      <svg class="w-4 h-4 text-gray-300 dark:text-slate-500 flex-shrink-0 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg>
-    </NuxtLink>
-
     <!-- Pengajuan Izin -->
     <NuxtLink
       to="/absensi/izin"
@@ -193,6 +172,17 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
       <svg class="w-4 h-4 text-gray-300 dark:text-slate-500 flex-shrink-0 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
+    </NuxtLink>
+
+    <!-- Scan QR Absen -->
+    <NuxtLink
+      to="/absensi/scan"
+      class="w-full mb-4 flex items-center justify-center gap-2 rounded-xl bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white font-semibold py-3.5 px-4 shadow-md shadow-primary-500/30 transition-colors"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+      </svg>
+      Scan QR Absen
     </NuxtLink>
 
     <!-- ===== Loading skeleton ===== -->
@@ -275,7 +265,7 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
           </p>
           <NuxtLink
             to="/absensi/jadwal#jadwal-minggu"
-            class="mt-2 self-start inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/40 ring-1 ring-primary-200 dark:ring-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/60 transition-colors"
+            class="mt-2 self-start inline-flex items-center gap-1 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors"
           >
             Lihat
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

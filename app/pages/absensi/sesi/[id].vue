@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { statusLabels, statusBadgeVariant } from '~/utils/absensi'
 
 interface SiswaItem {
   id: number
@@ -161,8 +160,14 @@ onMounted(() => {
           <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Sesi absensi</p>
           <p class="text-lg font-bold text-gray-900 dark:text-gray-100 truncate">{{ sesi.jadwal.mapel }}</p>
         </div>
-        <BaseBadge v-if="sesi.status === 'AKTIF'" variant="green" dot pulse>AKTIF</BaseBadge>
-        <BaseBadge v-else variant="gray">SELESAI</BaseBadge>
+        <span v-if="sesi.status === 'AKTIF'" class="inline-flex items-center gap-1.5 flex-shrink-0">
+          <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0"></span>
+          <span class="text-xs font-medium text-gray-600 dark:text-gray-400">AKTIF</span>
+        </span>
+        <span v-else class="inline-flex items-center gap-1.5 flex-shrink-0">
+          <span class="w-2 h-2 rounded-full bg-gray-400 flex-shrink-0"></span>
+          <span class="text-xs text-gray-600 dark:text-gray-400">SELESAI</span>
+        </span>
       </div>
 
       <dl class="space-y-1.5 text-sm">

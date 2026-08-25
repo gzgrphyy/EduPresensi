@@ -41,3 +41,9 @@ export const statusIzinBadgeVariant: Record<string, string> = {
   DISETUJUI: 'green',
   DITOLAK: 'red'
 }
+
+export const statusIzinDotColor: Record<string, string> = {
+  PENDING: 'bg-amber-400',
+  DISETUJUI: 'bg-green-500',
+  DITOLAK: 'bg-red-500'
+}

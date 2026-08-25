@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { jenisIzinLabels, statusIzinLabels, statusIzinBadgeVariant } from '~/utils/absensi'
+import { jenisIzinLabels, statusIzinLabels, statusIzinDotColor } from '~/utils/absensi'
 
 interface ItemSiswa {
   id: number
@@ -219,9 +219,10 @@ async function tolak(item: IzinItem) {
                 <BaseBadge variant="gray" size="sm">
                   {{ jenisIzinLabels[item.jenis] || item.jenis }}
                 </BaseBadge>
-                <BaseBadge :variant="statusIzinBadgeVariant[item.status] || 'gray'" size="sm">
-                  {{ statusIzinLabels[item.status] || item.status }}
-                </BaseBadge>
+                <span class="inline-flex items-center gap-1.5 flex-shrink-0">
+                  <span class="w-2 h-2 rounded-full flex-shrink-0" :class="statusIzinDotColor[item.status] || 'bg-gray-400'"></span>
+                  <span class="text-xs text-gray-600 dark:text-gray-400">{{ statusIzinLabels[item.status] || item.status }}</span>
+                </span>
               </div>
             </div>
 
