@@ -169,9 +169,7 @@ function aksiLabel(aksi: string) {
               <h3 class="text-sm font text-gray-900 dark:text-gray-100">{{ t('admin.beranda.topAlphaTitle') }}</h3>
               <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ t('admin.beranda.topAlphaDesc') }}</p>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs text-gray-400 dark:text-gray-200  bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded-lg">{{ data.topAlpha.length }} {{ t('admin.beranda.unitMurid') }}</span>
-            </div>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ data.topAlpha.length }} {{ t('admin.beranda.unitMurid') }}</span>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-xs">
@@ -187,7 +185,10 @@ function aksiLabel(aksi: string) {
                   <td class="px-4 py-3 text-gray-900 dark:text-gray-100 truncate max-w-[11rem]" :title="item.nama">{{ item.nama }}</td>
                   <td class="px-4 py-3 text-gray-600 dark:text-gray-400 text-center">{{ item.kelas }}</td>
                   <td class="px-4 py-3 text-center">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs  bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 ring-1 ring-red-200 dark:ring-red-800">{{ item.totalAlpha }}x</span>
+                    <span
+                      class="text-xs font-bold"
+                      :class="item.totalAlpha >= 6 ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'"
+                    >{{ item.totalAlpha }}x</span>
                   </td>
                 </tr>
                 <tr v-if="data.topAlpha.length === 0">
@@ -199,7 +200,7 @@ function aksiLabel(aksi: string) {
           <div class="px-4 py-3 border-t admin-accent-border flex items-center justify-between gap-3">
             <NuxtLink
               to="/admin/alpha"
-              class="ml-auto inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs  text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/40 ring-1 ring-primary-200 dark:ring-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/60 transition-colors"
+              class="ml-auto inline-flex items-center gap-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
             >
               {{ t('admin.beranda.lihatSelengkapnya') }}
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,7 +217,10 @@ function aksiLabel(aksi: string) {
               <h3 class="text-sm font text-gray-900 dark:text-gray-100">{{ t('admin.beranda.monitoringTitle') }}</h3>
               <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{{ t('admin.beranda.monitoringDesc') }}</p>
             </div>
-            <BaseBadge variant="green" dot size="sm">{{ data.monitoring.filter(r => r.status === 'Aktif').length }} {{ t('admin.beranda.unitAktif') }}</BaseBadge>
+            <div class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+              <span class="text-xs text-gray-500 dark:text-gray-400">{{ data.monitoring.filter(r => r.status === 'Aktif').length }} {{ t('admin.beranda.unitAktif') }}</span>
+            </div>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-xs">
@@ -232,12 +236,13 @@ function aksiLabel(aksi: string) {
                 <tr v-for="(item, idx) in data.monitoring.slice(0, 5)" :key="idx" class="hover:bg-gray-50/40 dark:hover:bg-gray-700/30 transition-colors">
                   <td class="px-4 py-3 text-gray-900 dark:text-gray-100 truncate max-w-[7rem]" :title="item.ruangan">{{ item.ruangan }}</td>
                   <td class="px-4 py-3 text-center">
-                    <BaseBadge
-                      :variant="item.status === 'Aktif' ? 'green' : 'gray'"
-                      :dot="item.status === 'Aktif'"
-                    >
-                      {{ statusLabel(item.status) }}
-                    </BaseBadge>
+                    <span class="inline-flex items-center gap-1.5">
+                      <span
+                        class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                        :class="item.status === 'Aktif' ? 'bg-green-500' : 'bg-gray-400 dark:bg-gray-500'"
+                      ></span>
+                      <span class="text-xs text-gray-600 dark:text-gray-400">{{ statusLabel(item.status) }}</span>
+                    </span>
                   </td>
                   <td class="px-4 py-3 text-gray-700 dark:text-gray-300 truncate max-w-[8rem]" :title="item.sesi">{{ item.sesi }}</td>
                   <td class="px-4 py-3 text-gray-500 dark:text-gray-400 hidden md:table-cell truncate max-w-[10rem]" :title="item.ptk">{{ item.ptk }}</td>
@@ -254,7 +259,7 @@ function aksiLabel(aksi: string) {
             </p>
             <NuxtLink
               to="/admin/monitoring"
-              class="ml-auto inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs  text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/40 ring-1 ring-primary-200 dark:ring-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/60 transition-colors"
+              class="ml-auto inline-flex items-center gap-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
             >
               {{ t('admin.beranda.lihatSelengkapnya') }}
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,7 +274,7 @@ function aksiLabel(aksi: string) {
       <div class="bg-white dark:bg-gray-800 rounded-lg border admin-accent-border">
         <div class="px-4 py-3 border-b admin-accent-border flex items-center justify-between">
           <h3 class="text-sm font text-gray-900 dark:text-gray-100">{{ t('admin.beranda.aktivitasTitle') }}</h3>
-          <span class="text-xs text-gray-400 dark:text-gray-200  bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded-lg">{{ data.aktivitasTerbaru.length }} {{ t('admin.beranda.unitAktivitas') }}</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400">{{ data.aktivitasTerbaru.length }} {{ t('admin.beranda.unitAktivitas') }}</span>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-xs">
@@ -284,12 +289,13 @@ function aksiLabel(aksi: string) {
               <tr v-for="(item, idx) in data.aktivitasTerbaru" :key="idx" class="hover:bg-gray-50/40 dark:hover:bg-gray-700/30 transition-colors">
                 <td class="px-4 py-3 text-gray-400 dark:text-gray-500 text-xs font-mono">{{ item.waktu }}</td>
                 <td class="px-4 py-3">
-                  <BaseBadge
-                    :variant="item.aksi.includes('dibuka') ? 'green' : 'gray'"
-                    size="sm"
-                  >
-                    {{ aksiLabel(item.aksi) }}
-                  </BaseBadge>
+                  <span class="inline-flex items-center gap-1.5">
+                    <span
+                      class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      :class="item.aksi.includes('dibuka') ? 'bg-green-500' : 'bg-gray-400 dark:bg-gray-500'"
+                    ></span>
+                    <span class="text-xs text-gray-600 dark:text-gray-400">{{ aksiLabel(item.aksi) }}</span>
+                  </span>
                 </td>
                 <td class="px-5 py-3 text-gray-700 dark:text-gray-300">{{ item.detail }}</td>
               </tr>

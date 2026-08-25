@@ -580,9 +580,10 @@
               <td class="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs hidden xl:table-cell">{{ item.user.email ||
                 '-' }}</td>
               <td class="px-4 py-3 text-center">
-                <BaseBadge :variant="item.user.isActive ? 'green' : 'gray'" size="sm" :dot="item.user.isActive">
-                  {{ item.user.isActive ? t('admin.tahunAjaran.aktif') : t('admin.tahunAjaran.tidakAktif') }}
-                </BaseBadge>
+                <span class="inline-flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="item.user.isActive ? 'bg-green-500' : 'bg-gray-400 dark:bg-gray-500'"></span>
+                  <span class="text-xs text-gray-600 dark:text-gray-400">{{ item.user.isActive ? t('admin.tahunAjaran.aktif') : t('admin.tahunAjaran.tidakAktif') }}</span>
+                </span>
               </td>
               <td class="px-4 py-3">
                 <div class="flex items-center justify-center gap-1">
@@ -650,7 +651,7 @@
         </p>
         <div class="ml-auto flex items-center gap-2">
           <button @click="page--" :disabled="page <= 1"
-            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs  text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/40 ring-1 ring-primary-200 dark:ring-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/60 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+            class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
@@ -661,14 +662,14 @@
               <button v-if="n !== '...'" @click="page = n" :disabled="n === page"
                 :class="n === page
                   ? 'w-7 h-7 rounded-md text-xs  text-white bg-primary-600 ring-1 ring-primary-600 cursor-default'
-                  : 'w-7 h-7 rounded-md text-xs  text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/40 ring-1 ring-primary-200 dark:ring-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/60 transition-colors'">
+                  : 'w-7 h-7 rounded-md text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors'">
                 {{ n }}
               </button>
               <span v-else class="px-0.5 text-xs text-gray-400 dark:text-gray-500 select-none">&hellip;</span>
             </template>
           </div>
           <button @click="page++" :disabled="page >= totalPages"
-            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs  text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/40 ring-1 ring-primary-200 dark:ring-primary-800 hover:bg-primary-100 dark:hover:bg-primary-900/60 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+            class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             {{ t('common.selanjutnya') }}
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

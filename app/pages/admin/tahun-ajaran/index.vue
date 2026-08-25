@@ -545,8 +545,7 @@
                   <span class="text-gray-900 dark:text-gray-100">{{ semesterLabel(item.nama) }}</span>
                 </td>
                 <td class="px-4 sm:px-6 py-4 text-center hidden sm:table-cell border-r border-gray-200 dark:border-slate-600">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 ring-1 ring-gray-200 dark:ring-slate-600">
+                  <span class="text-xs text-gray-600 dark:text-gray-300">
                     {{ displayAngka(item) }}
                   </span>
                 </td>
@@ -557,9 +556,10 @@
                   <span class="text-xs text-gray-600 dark:text-gray-300">{{ formatDate(item.tanggalAkhir) }}</span>
                 </td>
                 <td class="px-4 sm:px-6 py-4 text-center border-r border-gray-200 dark:border-slate-600">
-                  <BaseBadge :variant="item.isActive ? 'green' : 'gray'" size="sm" :dot="item.isActive">
-                    {{ item.isActive ? t('admin.tahunAjaran.aktif') : t('admin.tahunAjaran.tidakAktif') }}
-                  </BaseBadge>
+                  <span class="inline-flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="item.isActive ? 'bg-green-500' : 'bg-gray-400 dark:bg-gray-500'"></span>
+                    <span class="text-xs text-gray-600 dark:text-gray-400">{{ item.isActive ? t('admin.tahunAjaran.aktif') : t('admin.tahunAjaran.tidakAktif') }}</span>
+                  </span>
                 </td>
                 <td class="px-4 sm:px-6 py-4">
                   <div class="flex items-center justify-center gap-1">
@@ -687,8 +687,7 @@
                   <span class="text-gray-900 dark:text-gray-100">{{ item.nama }}</span>
                 </td>
                 <td class="px-4 sm:px-6 py-4 text-center hidden sm:table-cell border-r border-gray-200 dark:border-slate-600">
-                  <span
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 ring-1 ring-gray-200 dark:ring-slate-600">
+                  <span class="text-xs text-gray-600 dark:text-gray-300">
                     {{ displayAngkaTahun(item) }}
                   </span>
                 </td>
@@ -699,9 +698,10 @@
                   <span class="text-xs text-gray-600 dark:text-gray-300">{{ formatDate(item.tanggalAkhir) }}</span>
                 </td>
                 <td class="px-4 sm:px-6 py-4 text-center border-r border-gray-200 dark:border-slate-600">
-                  <BaseBadge :variant="item.isActive ? 'green' : 'gray'" size="sm" :dot="item.isActive">
-                    {{ item.isActive ? t('admin.tahunAjaran.aktif') : t('admin.tahunAjaran.tidakAktif') }}
-                  </BaseBadge>
+                  <span class="inline-flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="item.isActive ? 'bg-green-500' : 'bg-gray-400 dark:bg-gray-500'"></span>
+                    <span class="text-xs text-gray-600 dark:text-gray-400">{{ item.isActive ? t('admin.tahunAjaran.aktif') : t('admin.tahunAjaran.tidakAktif') }}</span>
+                  </span>
                 </td>
                 <td class="px-4 sm:px-6 py-4">
                   <div class="flex items-center justify-center gap-1">
