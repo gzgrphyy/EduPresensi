@@ -41,15 +41,11 @@ const selectedItems = computed(() =>
   data.value?.grouped[selectedDay.value] || []
 )
 
-onMounted(() => {
-  if (data.value?.grouped) {
-    if (data.value.grouped[todayHari.value]) {
-      selectedDay.value = todayHari.value
-    } else {
-      selectedDay.value = data.value.hariOrder.find(h => data.value!.grouped[h]) || ''
-    }
+watch(availableDays, (days) => {
+  if (days.length && !selectedDay.value) {
+    selectedDay.value = days.includes(todayHari.value) ? todayHari.value : days[0]
   }
-})
+}, { immediate: true })
 </script>
 
 <template>

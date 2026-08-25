@@ -12,6 +12,23 @@ const { t } = useI18n()
 // Murid yang sedang dilihat detail alphanya (modal)
 const detailItem = ref<AlphaItem | null>(null)
 
+const detailPage = ref(1)
+const detailPageSize = 10
+watch(detailItem, () => { detailPage.value = 1 })
+const detailTotalPages = computed(() =>
+  Math.max(1, Math.ceil((detailItem.value?.pelajaran || []).length / detailPageSize))
+)
+const detailVisible = computed(() => {
+  const list = detailItem.value?.pelajaran || []
+  const start = (detailPage.value - 1) * detailPageSize
+  return list.slice(start, start + detailPageSize)
+})
+const detailStartIndex = computed(() =>
+  (detailItem.value?.pelajaran || []).length > detailPageSize
+    ? (detailPage.value - 1) * detailPageSize + 1
+    : 0
+)
+
 // Jumlah chip pelajaran yang ditampilkan di tabel; sisanya lewat modal detail
 const maxChips = 3
 
@@ -133,7 +150,7 @@ const totalAlpha = computed(() => (data.value || []).reduce((a, b) => a + b.tota
             <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.alpha.statTotalAlpha') }}</span>
           </div>
           <div class="mt-1.5 flex items-baseline gap-2">
-            <span class="text-2xl font-bold tracking-tight text-red-600 dark:text-red-400 font-mono">{{ totalAlpha }}</span>
+            <span class="text-2xl font-bold tracking-tight text-red-600 dark:text-red-400 font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;">{{ totalAlpha }}</span>
             <span class="text-xs text-gray-400 dark:text-gray-500">{{ t('admin.alpha.unitJamPelajaran') }}</span>
           </div>
         </div>
@@ -146,7 +163,7 @@ const totalAlpha = computed(() => (data.value || []).reduce((a, b) => a + b.tota
             <span class="text-xs font-medium text-gray-600 dark:text-gray-300">{{ t('admin.alpha.statMuridAlpha') }}</span>
           </div>
           <div class="mt-1.5 flex items-baseline gap-2">
-            <span class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 font-mono">{{ (data || []).length }}</span>
+            <span class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;">{{ (data || []).length }}</span>
             <span class="text-xs text-gray-400 dark:text-gray-500">{{ t('admin.alpha.unitSiswa') }}</span>
           </div>
         </div>
@@ -177,7 +194,7 @@ const totalAlpha = computed(() => (data.value || []).reduce((a, b) => a + b.tota
                   <div v-if="item.pelajaran?.length" class="text-gray-600 dark:text-gray-300 leading-relaxed">
                     <template v-for="(p, pIdx) in (item.pelajaran || []).slice(0, maxChips)" :key="p.mapel">
                       <span>{{ p.mapel }}</span>
-                      <span class="text-red-600 dark:text-red-400 font-semibold font-mono ml-0.5">({{ p.total }})</span><span v-if="pIdx < Math.min((item.pelajaran || []).length, maxChips) - 1" class="mr-1.5 text-gray-400">,</span>
+                      <span class="text-red-600 dark:text-red-400 font-semibold font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; ml-0.5">({{ p.total }})</span><span v-if="pIdx < Math.min((item.pelajaran || []).length, maxChips) - 1" class="mr-1.5 text-gray-400">,</span>
                     </template>
                     <button
                       v-if="(item.pelajaran || []).length > maxChips"
@@ -190,7 +207,7 @@ const totalAlpha = computed(() => (data.value || []).reduce((a, b) => a + b.tota
                   <span v-else class="text-gray-400 dark:text-gray-500">-</span>
                 </td>
                 <td class="px-4 py-3 text-center">
-                  <span class="font-bold text-red-600 dark:text-red-400 font-mono">{{ item.totalAlpha }}×</span>
+                  <span class="font-bold text-red-600 dark:text-red-400 font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;">{{ item.totalAlpha }}×</span>
                 </td>
                 <td class="px-4 py-3">
                   <div class="flex items-center justify-center">
@@ -276,20 +293,51 @@ const totalAlpha = computed(() => (data.value || []).reduce((a, b) => a + b.tota
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-slate-700/60">
-              <tr v-for="(p, idx) in detailItem.pelajaran || []" :key="p.mapel"
+              <tr v-for="(p, idx) in detailVisible" :key="p.mapel"
                 class="transition-colors"
-                :class="idx % 2 === 1 ? 'bg-gray-50/40 dark:bg-slate-800/30' : 'bg-white dark:bg-slate-800'">
+                :class="(detailStartIndex + idx) % 2 === 1 ? 'bg-gray-50/40 dark:bg-slate-800/30' : 'bg-white dark:bg-slate-800'">
                 <td class="px-4 py-2.5  text-gray-900 dark:text-gray-100">{{ p.mapel }}</td>
                 <td class="px-4 py-2.5 text-center font-bold text-red-600 dark:text-red-400 font-mono">
                   {{ p.total }}×
                 </td>
-                <td class="px-4 py-2.5 text-gray-600 dark:text-gray-400 font-mono text-[11px]">{{ p.tanggal.join(', ') }}</td>
+                <td class="px-4 py-2.5 text-gray-600 dark:text-gray-400 font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif text-[12px]">{{ p.tanggal.join(', ') }}</td>
               </tr>
               <tr v-if="!detailItem.pelajaran?.length">
                 <td colspan="3" class="px-4 py-8 text-center text-gray-400 dark:text-gray-500">{{ t('admin.alpha.modalEmpty') }}</td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Pagination detail -->
+        <div v-if="(detailItem.pelajaran || []).length > detailPageSize"
+          class="px-4 py-2.5 border-t border-gray-200 dark:border-slate-700 flex items-center justify-between gap-3 bg-gray-50/30 dark:bg-slate-800/50">
+          <p class="text-xs text-gray-400 dark:text-gray-500">
+            {{ t('common.menampilkan', { from: (detailPage - 1) * detailPageSize + 1, to: Math.min(detailPage * detailPageSize, (detailItem.pelajaran || []).length), total: (detailItem.pelajaran || []).length, unit: t('admin.alpha.modalColMapel') }) }}
+          </p>
+          <div class="ml-auto flex items-center gap-2">
+            <button
+              @click="detailPage--"
+              :disabled="detailPage <= 1"
+              class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              {{ t('common.sebelumnya') }}
+            </button>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ t('common.halaman', { page: detailPage, total: detailTotalPages }) }}</span>
+            <button
+              @click="detailPage++"
+              :disabled="detailPage >= detailTotalPages"
+              class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {{ t('common.selanjutnya') }}
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 

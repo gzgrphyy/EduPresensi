@@ -55,6 +55,11 @@ const showCurrentPassword = ref(false)
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
 
+const roleLabel = computed(() => {
+  const role = profile.value?.role
+  return role ? role.charAt(0) + role.slice(1).toLowerCase() : '-'
+})
+
 watch(profile, (val) => {
   if (val) {
     form.nama = val.nama
@@ -193,7 +198,7 @@ async function handleChangePassword() {
         </div>
 
         <h2 class="mt-3 text-lg font-bold text-gray-900 dark:text-gray-100">{{ profile?.nama || '-' }}</h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400">PTK · {{ profile?.role || '-' }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">PTK · {{ roleLabel }}</p>
         <p class="text-xs text-gray-400 dark:text-gray-500">NIP: {{ profile?.nip || '-' }}</p>
 
         <button
@@ -213,7 +218,10 @@ async function handleChangePassword() {
     <BaseCard class="mt-6">
       <div class="flex items-center gap-2 mb-4">
         <svg class="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+          <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
         </svg>
         <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Wali Kelas</h3>
       </div>
