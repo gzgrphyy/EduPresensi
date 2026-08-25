@@ -35,9 +35,9 @@ export default defineEventHandler(async (event) => {
       izinTeksBebas: false,
     },
     keamanan: {
-      minimalPassword: 8,
-      sesiTimeout: 60,
-      maxLogin: 3,
+      minimalPassword: branding?.minimalPassword ?? 8,
+      sesiTimeout: branding?.sesiTimeout ?? 60,
+      maxLogin: branding?.maxLogin ?? 3,
       twoFactorAuth: false,
       logAktivitas: true,
     }

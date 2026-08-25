@@ -14,6 +14,27 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
   }
 
+  // Sliding idle timeout: sesi berakhir jika tidak ada aktivitas melebihi batas
+  const keamanan = await getKeamananSettings()
+  const now = Date.now()
+  const lastActivity = typeof session.lastActivity === 'number' ? session.lastActivity : now
+
+  if (now - lastActivity > keamanan.sesiTimeout * 60_000) {
+    await clearUserSession(event)
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Sesi telah berakhir karena tidak ada aktivitas. Silakan login kembali.'
+    })
+  }
+
+  if (session.lastActivity !== now) {
+    try {
+      await setUserSession(event, { lastActivity: now })
+    } catch {
+      // gagal refresh sesi tidak boleh memblokir request
+    }
+  }
+
   // /api/user/ accessible by any authenticated user (for profile)
   if (path.startsWith('/api/user/')) {
     return

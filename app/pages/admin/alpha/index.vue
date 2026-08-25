@@ -169,7 +169,7 @@ const totalAlpha = computed(() => (data.value || []).reduce((a, b) => a + b.tota
               <tr v-for="(item, idx) in visibleData" :key="item.id"
                 class="transition-colors hover:bg-primary-50/30 dark:hover:bg-slate-700/40"
                 :class="idx % 2 === 1 ? 'bg-gray-50/40 dark:bg-slate-800/30' : 'bg-white dark:bg-slate-800'">
-                <td class="px-4 py-3 font-semibold text-gray-900 dark:text-gray-100">{{ item.nama }}</td>
+                <td class="px-4 py-3  text-gray-900 dark:text-gray-100">{{ item.nama }}</td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300 hidden sm:table-cell font-medium">
                   {{ item.kelas }}
                 </td>
@@ -279,7 +279,7 @@ const totalAlpha = computed(() => (data.value || []).reduce((a, b) => a + b.tota
               <tr v-for="(p, idx) in detailItem.pelajaran || []" :key="p.mapel"
                 class="transition-colors"
                 :class="idx % 2 === 1 ? 'bg-gray-50/40 dark:bg-slate-800/30' : 'bg-white dark:bg-slate-800'">
-                <td class="px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">{{ p.mapel }}</td>
+                <td class="px-4 py-2.5  text-gray-900 dark:text-gray-100">{{ p.mapel }}</td>
                 <td class="px-4 py-2.5 text-center font-bold text-red-600 dark:text-red-400 font-mono">
                   {{ p.total }}×
                 </td>

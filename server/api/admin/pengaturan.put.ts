@@ -71,6 +71,12 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  if (parsed.keamanan) {
+    data.minimalPassword = parsed.keamanan.minimalPassword
+    data.sesiTimeout = parsed.keamanan.sesiTimeout
+    data.maxLogin = parsed.keamanan.maxLogin
+  }
+
   if (existing) {
     await prisma.pengaturan.update({
       where: { id: existing.id },
@@ -93,6 +99,9 @@ export default defineEventHandler(async (event) => {
         iconPath: data.iconPath || null,
         faviconPath: data.faviconPath || null,
         warnaUtama: data.warnaUtama || '#0A66A0',
+        minimalPassword: parsed.keamanan?.minimalPassword ?? 8,
+        sesiTimeout: parsed.keamanan?.sesiTimeout ?? 60,
+        maxLogin: parsed.keamanan?.maxLogin ?? 3,
       }
     })
   }

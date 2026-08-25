@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 const bodySchema = z.object({
   currentPassword: z.string().min(1, 'Password saat ini wajib diisi'),
-  newPassword: z.string().min(6, 'Password baru minimal 6 karakter').max(100)
+  newPassword: z.string().min(4, 'Password baru terlalu pendek').max(100)
 })
 
 export default defineEventHandler(async (event) => {
@@ -25,6 +25,14 @@ export default defineEventHandler(async (event) => {
   }
 
   const { currentPassword, newPassword } = result.data
+
+  const keamanan = await getKeamananSettings()
+  if (newPassword.length < keamanan.minimalPassword) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: `Password baru minimal ${keamanan.minimalPassword} karakter`
+    })
+  }
 
   // Verifikasi password saat ini
   if (!verifyPassword(currentPassword, user.passwordHash)) {

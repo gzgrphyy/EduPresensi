@@ -77,6 +77,8 @@ model User {
   passwordHash String   @map("password_hash") @db.VarChar(255)
   role         Role
   isActive     Boolean  @default(true) @map("is_active")
+  failedAttempts Int    @default(0) @map("failed_attempts")
+  lockedUntil  DateTime? @map("locked_until")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -266,6 +268,9 @@ model Pengaturan {
   logoDinasPath    String?  @map("logo_dinas_path") @db.VarChar(255)
   logoKotaPath     String?  @map("logo_kota_path") @db.VarChar(255)
   logoProvinsiPath String? @map("logo_provinsi_path") @db.VarChar(255)
+  minimalPassword  Int      @default(8) @map("minimal_password")
+  sesiTimeout      Int      @default(60) @map("sesi_timeout")
+  maxLogin         Int      @default(3) @map("max_login")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 

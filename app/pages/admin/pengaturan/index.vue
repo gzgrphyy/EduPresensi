@@ -88,7 +88,7 @@ function validateFile(file: File, allowedTypes: string[]): string | null {
 }
 
 // Init branding & umum from existing data
-onMounted(() => {
+onMounted(async () => {
   if (pengaturan.value) {
     formUmum.namaSekolah = pengaturan.value.namaSekolah
     formUmum.logoSekolahPath = pengaturan.value.logoSekolahPath
@@ -103,6 +103,17 @@ onMounted(() => {
     formBranding.iconPath = pengaturan.value.iconPath
     formBranding.faviconPath = pengaturan.value.faviconPath
     formBranding.warnaUtama = pengaturan.value.warnaUtama || '#0A66A0'
+  }
+
+  try {
+    const res = await $fetch<{ keamanan?: typeof formKeamanan }>('/api/admin/pengaturan')
+    if (res?.keamanan) {
+      formKeamanan.minimalPassword = res.keamanan.minimalPassword ?? 8
+      formKeamanan.sesiTimeout = res.keamanan.sesiTimeout ?? 60
+      formKeamanan.maxLogin = res.keamanan.maxLogin ?? 3
+    }
+  } catch {
+    // fallback ke default bila gagal fetch
   }
 })
 
