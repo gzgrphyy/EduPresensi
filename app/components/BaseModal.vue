@@ -58,7 +58,7 @@ function onBackdropClick() {
 
 <style> 
 .containerModal{
-  max-height: 500px;
+  max-height: 700px;
   overflow-y: auto;
 }
 </style>

@@ -148,14 +148,15 @@ function renderIcon(icon: string) {
           <button
             @click="toggleGroup(item.icon)"
             :class="[
-              'w-full flex items-center gap-2.5 py-2 text-xs  transition-all duration-150',
+              'relative w-full flex items-center gap-2.5 py-2 text-xs transition-all duration-150 rounded-lg',
               collapsed ? 'justify-center px-0' : 'px-3',
               isChildActive(item.children)
-                ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-                : 'text-gray-500 dark:text-gray-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400',
+                ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 font-medium'
+                : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700/60 hover:text-gray-700 dark:hover:text-gray-200',
               'rounded-lg'
             ]"
           >
+            <span v-if="isChildActive(item.children)" class="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-primary-500"></span>
             <svg class="w-5 h-5 flex-shrink-0" :class="isChildActive(item.children) ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" :d="renderIcon(item.icon)" />
             </svg>
@@ -170,11 +171,10 @@ function renderIcon(icon: string) {
               :key="child.to"
               :to="child.to"
               :class="[
-                'flex items-center gap-2 px-3 py-1.5 text-xs transition-all duration-150',
+                'flex items-center gap-2 px-3 py-1.5 text-xs transition-all duration-150 rounded-lg',
                 route.path === child.to
-                  ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 '
-                  : 'text-gray-500 dark:text-gray-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400',
-                'rounded-lg'
+                  ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 font-medium'
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700/60 hover:text-gray-700 dark:hover:text-gray-200'
               ]"
             >
               <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="route.path === child.to ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'"></span>
@@ -188,14 +188,14 @@ function renderIcon(icon: string) {
           v-else
           :to="item.to"
           :class="[
-            'w-full flex items-center gap-2.5 py-2 text-xs  transition-all duration-150',
+            'relative w-full flex items-center gap-2.5 py-2 text-xs transition-all duration-150 rounded-lg',
             collapsed ? 'justify-center px-0' : 'px-3',
             isActive(item.to)
-              ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
-              : 'text-gray-500 dark:text-gray-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400',
-            'rounded-lg'
+              ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 font-medium'
+              : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700/60 hover:text-gray-700 dark:hover:text-gray-200'
           ]"
         >
+          <span v-if="isActive(item.to)" class="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full bg-primary-500"></span>
           <svg class="w-5 h-5 flex-shrink-0" :class="isActive(item.to) ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" :d="renderIcon(item.icon)" />
           </svg>

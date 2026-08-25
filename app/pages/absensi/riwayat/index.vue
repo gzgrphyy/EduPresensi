@@ -51,6 +51,15 @@ const bulanOptions = [
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
 ]
 
+const bulanSelectOptions = [
+  { label: 'Semua Bulan', value: '' as const },
+  ...bulanOptions.map((b, i) => ({ label: b, value: i + 1 }))
+]
+
+const tahunSelectOptions = computed(() =>
+  tahunOptions.value.map(t => ({ label: String(t), value: t }))
+)
+
 async function downloadExport() {
   exporting.value = true
   try {
@@ -141,18 +150,11 @@ async function downloadExport() {
       <div class="space-y-3">
         <div>
           <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Bulan</label>
-          <select v-model="exportBulan"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-            <option :value="''">Semua Bulan</option>
-            <option v-for="(b, i) in bulanOptions" :key="b" :value="i + 1">{{ b }}</option>
-          </select>
+          <BaseSelect v-model="exportBulan" :options="bulanSelectOptions" placeholder="Semua Bulan" />
         </div>
         <div>
           <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Tahun</label>
-          <select v-model="exportTahun"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-            <option v-for="t in tahunOptions" :key="t" :value="t">{{ t }}</option>
-          </select>
+          <BaseSelect v-model="exportTahun" :options="tahunSelectOptions" placeholder="Pilih Tahun" />
         </div>
       </div>
       <template #footer>
