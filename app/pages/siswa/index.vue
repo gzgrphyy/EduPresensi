@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { statusLabels, statusBadgeVariant, statusDotColor } from '~/utils/absensi'
+import { statusLabels, statusDotColor } from '~/utils/absensi'
 
 interface TodayStatus {
   state: 'PRESENT' | 'PENDING' | 'ALPHA' | 'NOT_YET' | 'NO_SESSION'
@@ -281,14 +281,14 @@ onMounted(() => {
             to="/siswa/riwayat"
             class="flex items-center gap-3 px-5 py-3 active:bg-gray-50 dark:active:bg-slate-700/40 transition-colors"
           >
-            <span class="w-2 h-2 rounded-full flex-shrink-0" :class="statusDotColor[item.status] || 'bg-gray-400'"></span>
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ item.mapel }}</p>
               <p class="text-xs text-gray-500 dark:text-gray-400">{{ formatTanggal(item.tanggal) }} — {{ item.kelas }}</p>
             </div>
-            <BaseBadge :variant="statusBadgeVariant[item.status] || 'gray'" size="sm">
-              {{ statusLabels[item.status] || item.status }}
-            </BaseBadge>
+            <span class="inline-flex items-center gap-1.5 flex-shrink-0">
+              <span class="w-2 h-2 rounded-full flex-shrink-0" :class="statusDotColor[item.status] || 'bg-gray-400'"></span>
+              <span class="text-xs text-gray-600 dark:text-gray-400">{{ statusLabels[item.status] || item.status }}</span>
+            </span>
           </NuxtLink>
         </div>
         <div v-else class="py-10 px-5 text-center">

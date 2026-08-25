@@ -107,7 +107,7 @@ watch(availableDays, (days) => {
                 <span class="truncate">{{ item.guru.nama }}</span>
               </div>
             </div>
-            <BaseBadge variant="primary" size="sm" class="flex-shrink-0 ml-1 mt-0.5">{{ item.ruangan.nama }}</BaseBadge>
+            <span class="text-xs font-medium text-primary-600 dark:text-primary-400 flex-shrink-0 ml-1 mt-0.5">{{ item.ruangan.nama }}</span>
           </div>
         </div>
       </div>

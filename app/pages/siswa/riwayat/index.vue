@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { statusLabels, statusBadgeVariant } from '~/utils/absensi'
+import { statusLabels, statusDotColor } from '~/utils/absensi'
 
 interface RiwayatItem {
   id: number
@@ -135,9 +135,10 @@ async function downloadExport() {
                   {{ item.scannedAt ? new Date(item.scannedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-' }}
                 </td>
                 <td class="px-4 py-3 text-center">
-                  <BaseBadge :variant="statusBadgeVariant[item.status] || 'gray'">
-                    {{ statusLabels[item.status] || item.status }}
-                  </BaseBadge>
+                  <span class="inline-flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full flex-shrink-0" :class="statusDotColor[item.status] || 'bg-gray-400'"></span>
+                    <span class="text-xs text-gray-600 dark:text-gray-400">{{ statusLabels[item.status] || item.status }}</span>
+                  </span>
                 </td>
               </tr>
               <tr v-if="filteredData.length === 0">

@@ -311,14 +311,6 @@ onUnmounted(() => {
   stopCamera()
 })
 
-const statusBadgeVariant: Record<string, string> = {
-  PENDING: 'amber',
-  HADIR: 'green',
-  SAKIT: 'red',
-  IZIN: 'blue',
-  ALPHA: 'gray'
-}
-
 const statusLabels: Record<string, string> = {
   PENDING: 'Menunggu Konfirmasi',
   HADIR: 'Hadir',
@@ -513,9 +505,10 @@ const statusLabels: Record<string, string> = {
               </div>
               <div v-if="result.status" class="flex justify-between items-center">
                 <span class="text-gray-500 dark:text-gray-400">Status</span>
-                <BaseBadge :variant="statusBadgeVariant[result.status] || 'gray'">
-                  {{ statusLabels[result.status] || result.status }}
-                </BaseBadge>
+                <span class="inline-flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full flex-shrink-0" :class="statusDotColor[result.status] || 'bg-gray-400'"></span>
+                  <span class="text-xs text-gray-600 dark:text-gray-400">{{ statusLabels[result.status] || result.status }}</span>
+                </span>
               </div>
               <div v-if="result.scannedAt" class="flex justify-between items-center">
                 <span class="text-gray-500 dark:text-gray-400">Waktu</span>
