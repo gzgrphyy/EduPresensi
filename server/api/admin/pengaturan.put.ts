@@ -20,11 +20,8 @@ const pengaturanSchema = z.object({
     warnaUtama: z.string().regex(/^#[0-9a-fA-F]{3,8}$/).optional(),
   }).optional(),
   absensi: z.object({
-    batasScan: z.number().int().min(1).max(60),
     autoTutupSesi: z.boolean(),
-    batasTelat: z.number().int().min(0).max(120),
     notifikasi: z.boolean(),
-    toleransiAlpha: z.number().int().min(0).max(20),
     izinTeksBebas: z.boolean(),
   }),
   keamanan: z.object({
@@ -77,6 +74,12 @@ export default defineEventHandler(async (event) => {
     data.maxLogin = parsed.keamanan.maxLogin
   }
 
+  if (parsed.absensi) {
+    data.autoTutupSesi = parsed.absensi.autoTutupSesi
+    data.notifikasi = parsed.absensi.notifikasi
+    data.izinTeksBebas = parsed.absensi.izinTeksBebas
+  }
+
   if (existing) {
     await prisma.pengaturan.update({
       where: { id: existing.id },
@@ -102,6 +105,9 @@ export default defineEventHandler(async (event) => {
         minimalPassword: parsed.keamanan?.minimalPassword ?? 8,
         sesiTimeout: parsed.keamanan?.sesiTimeout ?? 60,
         maxLogin: parsed.keamanan?.maxLogin ?? 3,
+        autoTutupSesi: parsed.absensi?.autoTutupSesi ?? true,
+        notifikasi: parsed.absensi?.notifikasi ?? true,
+        izinTeksBebas: parsed.absensi?.izinTeksBebas ?? false,
       }
     })
   }

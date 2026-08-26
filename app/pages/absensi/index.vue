@@ -37,6 +37,19 @@ interface RiwayatSesi {
 
 const { user } = useUserSession()
 
+interface KabarItem {
+  jadwalId: number
+  jenis: string
+  mapel: string
+  jamMulai: string
+  jamSelesai: string
+  kelas: string
+  ruangan: string
+  jumlahPelapor: number
+  pelapor: string[]
+  terakhirPada: string
+}
+
 const activeSesiList = ref<ActiveSesi[]>([])
 const loading = ref(true)
 const errorMsg = ref('')
@@ -44,6 +57,8 @@ const successMsg = ref('')
 const closingSesi = ref<number | null>(null)
 const confirmClose = ref<ActiveSesi | null>(null)
 const pendingIzinCount = ref(0)
+const kabarBelumSelesai = ref<KabarItem[]>([])
+const kabarSudahBeres = ref<KabarItem[]>([])
 
 const { data: riwayatData } = useFetch<RiwayatSesi[]>('/api/absensi/riwayat', {
   immediate: true
@@ -107,6 +122,53 @@ async function fetchPendingIzin() {
   }
 }
 
+async function fetchKabar() {
+  try {
+    const res = await $fetch<{ belumSelesai: KabarItem[]; sudahBeres: KabarItem[] }>('/api/absensi/kabar')
+    kabarBelumSelesai.value = res.belumSelesai
+    kabarSudahBeres.value = res.sudahBeres
+  } catch {
+    kabarBelumSelesai.value = []
+    kabarSudahBeres.value = []
+  }
+}
+
+const confirmDismiss = ref<KabarItem | null>(null)
+const deletingKabar = ref(false)
+
+const kabarGroups = computed(() => {
+  return [
+    { jenis: 'BELUM_SELESAI' as const, label: 'Belum selesai', items: kabarBelumSelesai.value },
+    { jenis: 'SUDAH_BERES' as const, label: 'Sudah beres', items: kabarSudahBeres.value }
+  ].filter(g => g.items.length > 0)
+})
+
+const totalKabarAktif = computed(() => kabarBelumSelesai.value.length + kabarSudahBeres.value.length)
+
+function formatRelatif(iso: string) {
+  const mnt = Math.floor(Math.max(0, Date.now() - new Date(iso).getTime()) / 60000)
+  if (mnt < 1) return 'Baru saja'
+  if (mnt < 60) return `${mnt} mnt lalu`
+  return `${Math.floor(mnt / 60)} jam lalu`
+}
+
+async function dismissKabar(k: KabarItem) {
+  deletingKabar.value = true
+  errorMsg.value = ''
+  try {
+    await $fetch(`/api/absensi/kabar/${k.jadwalId}`, {
+      method: 'DELETE',
+      query: { jenis: k.jenis }
+    })
+    confirmDismiss.value = null
+    await fetchKabar()
+  } catch (err: any) {
+    showError(err?.data?.statusMessage || 'Gagal menghapus kabar')
+  } finally {
+    deletingKabar.value = false
+  }
+}
+
 async function tutupSesi(id: number) {
   closingSesi.value = id
   errorMsg.value = ''
@@ -125,9 +187,11 @@ async function tutupSesi(id: number) {
 onMounted(() => {
   fetchData()
   fetchPendingIzin()
+  fetchKabar()
   const interval = setInterval(() => {
     fetchData()
     fetchPendingIzin()
+    fetchKabar()
   }, 30000)
   onUnmounted(() => clearInterval(interval))
 })
@@ -154,11 +218,9 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
       class="mb-4 group flex items-center gap-4 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card dark:shadow-dark-card p-4 transition-colors hover:border-primary-200 dark:hover:border-primary-700"
     >
       <div class="relative flex-shrink-0">
-        <span class="w-11 h-11 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
-          <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-        </span>
+        <svg class="w-6 h-6 text-gray-900 dark:text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
         <span v-if="pendingIzinCount > 0" class="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
           {{ pendingIzinCount }}
         </span>
@@ -173,6 +235,72 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
       </svg>
     </NuxtLink>
+
+    <!-- Kabar dari murid -->
+    <section
+      v-if="totalKabarAktif > 0"
+      class="mb-4 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card dark:shadow-dark-card p-4"
+    >
+      <div class="flex items-center gap-3">
+        <div class="relative flex-shrink-0">
+          <svg class="w-6 h-6 text-gray-900 dark:text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm ring-2 ring-white dark:ring-slate-800">
+            {{ totalKabarAktif }}
+          </span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-bold text-gray-900 dark:text-gray-100">Kabar dari Murid</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Laporan langsung dari murid di kelasmu</p>
+        </div>
+      </div>
+
+      <template v-for="grup in kabarGroups" :key="grup.jenis">
+        <p class="mt-3 mb-1.5 text-[11px] font-semibold text-gray-400 dark:text-gray-500">
+          {{ grup.label }}
+        </p>
+
+        <div class="space-y-2">
+          <div
+            v-for="k in grup.items"
+            :key="`${grup.jenis}-${k.jadwalId}`"
+            class="relative rounded-xl border border-l-4 px-3.5 py-3"
+            :class="grup.jenis === 'BELUM_SELESAI'
+              ? 'border-gray-100 dark:border-slate-700 border-l-red-500 bg-gray-50/60 dark:bg-slate-700/30'
+              : 'border-gray-100 dark:border-slate-700 border-l-green-500 bg-gray-50/60 dark:bg-slate-700/30'"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ k.mapel }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Kelas {{ k.kelas }} · {{ k.ruangan }} · {{ k.jamMulai }}–{{ k.jamSelesai }}</p>
+              </div>
+
+              <div class="flex-shrink-0 flex items-center gap-2">
+                <button
+                  type="button"
+                  title="Hapus kabar"
+                  class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-red-500 dark:text-red-400"
+                  @click="confirmDismiss = k"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Hapus
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-end justify-between gap-2 mt-1.5 pr-2">
+              <p class="text-[11px] text-gray-400 dark:text-gray-500 truncate min-w-0">
+                {{ k.pelapor.slice(0, 3).join(', ') }}<template v-if="k.pelapor.length > 3"> +{{ k.pelapor.length - 3 }} lainnya</template>
+              </p>
+              <span class="flex-shrink-0 text-[11px] text-gray-400 dark:text-gray-500">{{ formatRelatif(k.terakhirPada) }}</span>
+            </div>
+          </div>
+        </div>
+      </template>
+    </section>
 
     <!-- Scan QR Absen -->
     <NuxtLink
@@ -321,6 +449,18 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
       :loading="closingSesi === confirmClose?.id"
       @confirm="confirmClose && tutupSesi(confirmClose.id)"
       @cancel="confirmClose = null"
+    />
+
+    <!-- Modal Confirm Dismiss Kabar -->
+    <ConfirmDialog
+      :show="!!confirmDismiss"
+      title="Hapus Kabar"
+      :message="`Hapus kabar '${confirmDismiss?.jenis === 'BELUM_SELESAI' ? 'Belum selesai' : 'Kelas sudah beres'}' dari ${confirmDismiss?.jumlahPelapor} siswa (${confirmDismiss?.mapel})? Murid bisa mengirim ulang setelah ini.`"
+      variant="warning"
+      confirm-label="Ya, Hapus"
+      :loading="deletingKabar"
+      @confirm="confirmDismiss && dismissKabar(confirmDismiss)"
+      @cancel="confirmDismiss = null"
     />
   </PTKLayout>
 </template>

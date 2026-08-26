@@ -49,11 +49,8 @@ const logoSekolahPreview = ref<string | null>(null)
 const logoSekolahFile = ref<File | null>(null)
 
 const formAbsensi = reactive({
-  batasScan: 10,
   autoTutupSesi: true,
-  batasTelat: 15,
   notifikasi: true,
-  toleransiAlpha: 3,
   izinTeksBebas: false,
 })
 
@@ -106,7 +103,12 @@ onMounted(async () => {
   }
 
   try {
-    const res = await $fetch<{ keamanan?: typeof formKeamanan }>('/api/admin/pengaturan')
+    const res = await $fetch<{ absensi?: typeof formAbsensi; keamanan?: typeof formKeamanan }>('/api/admin/pengaturan')
+    if (res?.absensi) {
+      formAbsensi.autoTutupSesi = res.absensi.autoTutupSesi ?? true
+      formAbsensi.notifikasi = res.absensi.notifikasi ?? true
+      formAbsensi.izinTeksBebas = res.absensi.izinTeksBebas ?? false
+    }
     if (res?.keamanan) {
       formKeamanan.minimalPassword = res.keamanan.minimalPassword ?? 8
       formKeamanan.sesiTimeout = res.keamanan.sesiTimeout ?? 60
@@ -536,40 +538,52 @@ async function handleSave() {
 
         <!-- Absensi -->
         <div v-show="activeTab === 'absensi'" class="space-y-4">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <BaseFormField :label="t('admin.pengaturan.batasScan')">
-              <input v-model.number="formAbsensi.batasScan" type="number" min="1"
-                class="w-full px-3.5 py-2.5 border admin-accent-border text-sm dark:bg-slate-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500" />
-            </BaseFormField>
-            <BaseFormField :label="t('admin.pengaturan.batasTelat')">
-              <input v-model.number="formAbsensi.batasTelat" type="number" min="1"
-                class="w-full px-3.5 py-2.5 border admin-accent-border text-sm dark:bg-slate-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500" />
-            </BaseFormField>
+          <div class="flex items-start gap-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-4 py-3">
+            <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="text-sm text-blue-700 dark:text-blue-300">{{ t('admin.pengaturan.absensiInfoBanner') }}</p>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <BaseFormField :label="t('admin.pengaturan.toleransiAlpha')">
-              <input v-model.number="formAbsensi.toleransiAlpha" type="number" min="1"
-                class="w-full px-3.5 py-2.5 border admin-accent-border text-sm dark:bg-slate-700 dark:text-gray-100 focus:ring-2 focus:ring-blue-500" />
-            </BaseFormField>
-          </div>
-          <div class="space-y-3">
-            <BaseFormField :label="t('admin.pengaturan.opsiLainnya')">
-              <div class="flex items-center gap-3">
-                <input v-model="formAbsensi.autoTutupSesi" type="checkbox" id="autoTutup"
-                  class="w-4 h-4 rounded admin-accent-border text-blue-600 dark:bg-slate-700 focus:ring-blue-500" />
-                <label for="autoTutup" class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.pengaturan.autoTutupSesi') }}</label>
+
+          <div class="rounded-lg border admin-accent-border divide-y divide-gray-200 dark:divide-slate-600">
+            <div class="flex items-center justify-between gap-4 px-4 sm:px-5 py-4">
+              <div class="flex items-center gap-3.5">
+                <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ t('admin.pengaturan.autoTutupSesiJudul') }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('admin.pengaturan.autoTutupSesiDeskripsi') }}</p>
+                </div>
               </div>
-              <div class="flex items-center gap-3">
-                <input v-model="formAbsensi.notifikasi" type="checkbox" id="notif"
-                  class="w-4 h-4 rounded admin-accent-border text-blue-600 dark:bg-slate-700 focus:ring-blue-500" />
-                <label for="notif" class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.pengaturan.kirimNotifikasi') }}</label>
+              <BaseToggle v-model="formAbsensi.autoTutupSesi" :label="t('admin.pengaturan.autoTutupSesiJudul')" />
+            </div>
+
+            <div class="flex items-center justify-between gap-4 px-4 sm:px-5 py-4">
+              <div class="flex items-center gap-3.5">
+                <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ t('admin.pengaturan.notifikasiWaliJudul') }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('admin.pengaturan.notifikasiWaliDeskripsi') }}</p>
+                </div>
               </div>
-              <div class="flex items-center gap-3">
-                <input v-model="formAbsensi.izinTeksBebas" type="checkbox" id="izinBebas"
-                  class="w-4 h-4 rounded admin-accent-border text-blue-600 dark:bg-slate-700 focus:ring-blue-500" />
-                <label for="izinBebas" class="text-sm text-gray-700 dark:text-gray-300">{{ t('admin.pengaturan.izinTeksBebas') }}</label>
+              <BaseToggle v-model="formAbsensi.notifikasi" :label="t('admin.pengaturan.notifikasiWaliJudul')" />
+            </div>
+
+            <div class="flex items-center justify-between gap-4 px-4 sm:px-5 py-4">
+              <div class="flex items-center gap-3.5">
+                <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ t('admin.pengaturan.izinTeksBebasJudul') }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ t('admin.pengaturan.izinTeksBebasDeskripsi') }}</p>
+                </div>
               </div>
-            </BaseFormField>
+              <BaseToggle v-model="formAbsensi.izinTeksBebas" :label="t('admin.pengaturan.izinTeksBebasJudul')" />
+            </div>
           </div>
         </div>
 

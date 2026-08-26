@@ -27,12 +27,9 @@ export default defineEventHandler(async (event) => {
       warnaUtama: '#0A66A0',
     },
     absensi: {
-      batasScan: 10,
-      autoTutupSesi: true,
-      batasTelat: 15,
-      notifikasi: true,
-      toleransiAlpha: 3,
-      izinTeksBebas: false,
+      autoTutupSesi: branding?.autoTutupSesi ?? true,
+      notifikasi: branding?.notifikasi ?? true,
+      izinTeksBebas: branding?.izinTeksBebas ?? false,
     },
     keamanan: {
       minimalPassword: branding?.minimalPassword ?? 8,

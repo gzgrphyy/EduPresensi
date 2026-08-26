@@ -36,15 +36,6 @@
   const activeTab = ref<'data' | 'absensi'>('data')
   const { pengaturan, fetch: fetchPengaturan } = usePengaturan()
 
-  const formAbsensi = reactive({
-    batasScan: 10,
-    autoTutupSesi: true,
-    batasTelat: 15,
-    notifikasi: true,
-    toleransiAlpha: 3,
-    izinTeksBebas: false,
-  })
-
   const savingPengaturan = ref(false)
   const successMsgPengaturan = ref('')
   const errorMsgPengaturan = ref('')

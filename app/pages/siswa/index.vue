@@ -31,6 +31,59 @@ const { user } = useUserSession()
 
 const { data, pending, error, refresh } = useFetch<DashboardData>('/api/siswa/dashboard')
 
+interface KabarTarget {
+  jadwalId: number
+  mapel: string
+  guru: string
+  jamMulai: string
+  ruangan: string
+}
+
+interface KabarStatus {
+  belumSelesai: {
+    bisa: boolean
+    sudah: boolean
+    mapelBerjalan: { mapel: string; guru: string; jamMulai: string; jamSelesai: string; ruangan: string } | null
+    target: KabarTarget | null
+  }
+  sudahBeres: {
+    bisa: boolean
+    sudah: boolean
+    target: KabarTarget | null
+  }
+}
+
+const { data: kabar, refresh: refreshKabar } = useFetch<KabarStatus>('/api/siswa/kabar-status')
+
+const kabarSending = ref<'BELUM_SELESAI' | 'SUDAH_BERES' | null>(null)
+const kabarTerkirim = ref<Record<string, boolean>>({})
+
+async function kirimKabar(jenis: 'BELUM_SELESAI' | 'SUDAH_BERES') {
+  const grup = jenis === 'BELUM_SELESAI' ? kabar.value?.belumSelesai : kabar.value?.sudahBeres
+  if (!grup?.target || kabarSending.value) return
+  kabarSending.value = jenis
+  try {
+    await $fetch('/api/siswa/kabar', {
+      method: 'POST',
+      body: { jadwalId: grup.target.jadwalId, jenis }
+    })
+    kabarTerkirim.value = { ...kabarTerkirim.value, [jenis]: true }
+    await refreshKabar()
+  } catch {
+    // diamkan; tombol tetap bisa dicoba lagi
+  } finally {
+    kabarSending.value = null
+  }
+}
+
+const tampilKabarCard = computed(() => {
+  const k = kabar.value
+  if (!k) return false
+  const belumAktif = k.belumSelesai.bisa && !k.belumSelesai.sudah && !kabarTerkirim.value['BELUM_SELESAI']
+  const beresAktif = k.sudahBeres.bisa && !k.sudahBeres.sudah && !kabarTerkirim.value['SUDAH_BERES']
+  return belumAktif || beresAktif
+})
+
 interface JadwalMingguanItem {
   id: number
   mapel: string
@@ -80,6 +133,7 @@ onMounted(() => {
   const { refresh: refreshSesiHariIni } = useSesiHariIni()
   const interval = setInterval(() => {
     refresh()
+    refreshKabar()
     refreshSesiHariIni()
   }, 30000)
   onUnmounted(() => clearInterval(interval))
@@ -223,6 +277,58 @@ onMounted(() => {
             </div>
           </div>
         </template>
+      </section>
+
+      <!-- Kabar belum selesai / sudah beres -->
+      <section
+        v-if="tampilKabarCard"
+        class="mt-4 rounded-2xl border p-5 shadow-card dark:shadow-dark-card bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700"
+      >
+        <p class="text-xs font-medium text-gray-400 dark:text-gray-500 mb-3">Kabar ke Guru</p>
+
+        <div class="space-y-2.5">
+          <!-- Belum selesai -->
+          <div
+            v-if="kabar?.belumSelesai.bisa && !kabar.belumSelesai.sudah && !kabarTerkirim['BELUM_SELESAI']"
+            class="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3.5"
+          >
+            <div class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 flex-shrink-0 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate flex-1">Masih mapel {{ kabar.belumSelesai.mapelBerjalan?.mapel }}?</p>
+            </div>
+            <button
+              type="button"
+              :disabled="kabarSending !== null"
+              class="mt-2.5 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary-500 hover:bg-primary-600 active:bg-primary-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-semibold py-2 px-3 transition-colors"
+              @click="kirimKabar('BELUM_SELESAI')"
+            >
+              Kabari Guru {{ kabar.belumSelesai.target?.mapel }} ({{ kabar.belumSelesai.target?.jamMulai }}): Kelas Belum Selesai
+            </button>
+          </div>
+
+          <!-- Sudah beres -->
+          <div
+            v-if="kabar?.sudahBeres.bisa && !kabar.sudahBeres.sudah && !kabarTerkirim['SUDAH_BERES']"
+            class="rounded-xl border border-green-200 dark:border-green-800 bg-white dark:bg-slate-800 p-3.5"
+          >
+            <div class="flex items-center gap-2.5">
+              <svg class="w-4 h-4 flex-shrink-0 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate flex-1">Kelas sudah beres?</p>
+            </div>
+            <button
+              type="button"
+              :disabled="kabarSending !== null"
+              class="mt-2.5 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-semibold py-2 px-3 transition-colors"
+              @click="kirimKabar('SUDAH_BERES')"
+            >
+              Kabari Guru {{ kabar.sudahBeres.target?.mapel }}: Kelas Sudah Beres
+            </button>
+          </div>
+        </div>
       </section>
 
       <!-- Scan CTA -->

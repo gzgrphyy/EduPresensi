@@ -1,4 +1,5 @@
 import prisma from './prisma'
+import { getAbsensiSettings } from './pengaturan'
 
 export const TOLERANSI_MENIT = 10
 
@@ -94,6 +95,11 @@ export async function finalizeSesi(sesiId: number) {
 }
 
 export async function finalizeExpiredSesi() {
+  const settings = await getAbsensiSettings()
+  if (!settings.autoTutupSesi) {
+    return 0
+  }
+
   const now = new Date()
   const today = todayDate()
   const tNow = timeToMinutes(currentTimeHHMM(now))

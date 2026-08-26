@@ -47,6 +47,11 @@ enum StatusIzin {
   DITOLAK
 }
 
+enum KabarJenis {
+  BELUM_SELESAI
+  SUDAH_BERES
+}
+
 enum Hari {
   SENIN
   SELASA
@@ -170,6 +175,7 @@ model Siswa {
   kelas          Kelas             @relation(fields: [kelasId], references: [id])
   absensiRequests AbsensiRequest[]
   izins           Izin[]
+  kabars         KabarSesi[]
 
   @@map("siswa")
 }
@@ -208,8 +214,24 @@ model JadwalPelajaran {
   guru          User           @relation("GuruPengampu", fields: [guruId], references: [id])
   ptkPendamping PtkPendamping? @relation("JadwalPendamping", fields: [ptkPendampingId], references: [id])
   sesi          SesiAbsensi[]
+  kabars        KabarSesi[]
 
   @@map("jadwal_pelajaran")
+}
+
+model KabarSesi {
+  id        Int        @id @default(autoincrement())
+  siswaId   Int        @map("siswa_id")
+  jadwalId  Int        @map("jadwal_id")
+  jenis     KabarJenis @default(BELUM_SELESAI)
+  tanggal   DateTime   @db.Date
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  siswa  Siswa            @relation(fields: [siswaId], references: [id])
+  jadwal JadwalPelajaran  @relation(fields: [jadwalId], references: [id])
+
+  @@unique([jadwalId, siswaId, tanggal, jenis])
+  @@map("kabar_sesi")
 }
 
 model PtkPendamping {
@@ -271,6 +293,9 @@ model Pengaturan {
   minimalPassword  Int      @default(8) @map("minimal_password")
   sesiTimeout      Int      @default(60) @map("sesi_timeout")
   maxLogin         Int      @default(3) @map("max_login")
+  autoTutupSesi    Boolean  @default(true) @map("auto_tutup_sesi")
+  notifikasi       Boolean  @default(true) @map("notifikasi")
+  izinTeksBebas    Boolean  @default(false) @map("izin_teks_bebas")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
