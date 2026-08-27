@@ -136,11 +136,54 @@ async function fetchKabar() {
 const confirmDismiss = ref<KabarItem | null>(null)
 const deletingKabar = ref(false)
 
-const kabarGroups = computed(() => {
-  return [
-    { jenis: 'BELUM_SELESAI' as const, label: 'Belum selesai', items: kabarBelumSelesai.value },
-    { jenis: 'SUDAH_BERES' as const, label: 'Sudah beres', items: kabarSudahBeres.value }
-  ].filter(g => g.items.length > 0)
+// Group kabar by session (jadwalId) instead of by jenis
+interface KabarSessionGroup {
+  jadwalId: number
+  mapel: string
+  jamMulai: string
+  jamSelesai: string
+  kelas: string
+  ruangan: string
+  belumSelesai: KabarItem | null
+  sudahBeres: KabarItem | null
+}
+
+const kabarSessions = computed<KabarSessionGroup[]>(() => {
+  const map = new Map<number, KabarSessionGroup>()
+  
+  for (const k of kabarBelumSelesai.value) {
+    if (!map.has(k.jadwalId)) {
+      map.set(k.jadwalId, {
+        jadwalId: k.jadwalId,
+        mapel: k.mapel,
+        jamMulai: k.jamMulai,
+        jamSelesai: k.jamSelesai,
+        kelas: k.kelas,
+        ruangan: k.ruangan,
+        belumSelesai: null,
+        sudahBeres: null
+      })
+    }
+    map.get(k.jadwalId)!.belumSelesai = k
+  }
+  
+  for (const k of kabarSudahBeres.value) {
+    if (!map.has(k.jadwalId)) {
+      map.set(k.jadwalId, {
+        jadwalId: k.jadwalId,
+        mapel: k.mapel,
+        jamMulai: k.jamMulai,
+        jamSelesai: k.jamSelesai,
+        kelas: k.kelas,
+        ruangan: k.ruangan,
+        belumSelesai: null,
+        sudahBeres: null
+      })
+    }
+    map.get(k.jadwalId)!.sudahBeres = k
+  }
+  
+  return [...map.values()].sort((a, b) => a.jamMulai.localeCompare(b.jamMulai))
 })
 
 const totalKabarAktif = computed(() => kabarBelumSelesai.value.length + kabarSudahBeres.value.length)
@@ -163,10 +206,21 @@ async function dismissKabar(k: KabarItem) {
     confirmDismiss.value = null
     await fetchKabar()
   } catch (err: any) {
-    showError(err?.data?.statusMessage || 'Gagal menghapus kabar')
+    showError(err?.data?.statusMessage || 'Gagal menandai selesai')
   } finally {
     deletingKabar.value = false
   }
+}
+
+function getTotalPelapor(session: KabarSessionGroup): number {
+  return (session.belumSelesai?.jumlahPelapor || 0) + (session.sudahBeres?.jumlahPelapor || 0)
+}
+
+function getAllPelapor(session: KabarSessionGroup): string[] {
+  const names: string[] = []
+  if (session.belumSelesai?.pelapor) names.push(...session.belumSelesai.pelapor)
+  if (session.sudahBeres?.pelapor) names.push(...session.sudahBeres.pelapor)
+  return names
 }
 
 async function tutupSesi(id: number) {
@@ -236,7 +290,7 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
       </svg>
     </NuxtLink>
 
-    <!-- Kabar dari murid -->
+    <!-- Kabar Masuk -->
     <section
       v-if="totalKabarAktif > 0"
       class="mb-4 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card dark:shadow-dark-card p-4"
@@ -251,55 +305,104 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
           </span>
         </div>
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-bold text-gray-900 dark:text-gray-100">Kabar dari Murid</p>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Laporan langsung dari murid di kelasmu</p>
+          <p class="text-sm font-bold text-gray-900 dark:text-gray-100">Kabar Masuk</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ kabarSessions.length }} kelas · {{ totalKabarAktif }} kabar</p>
         </div>
       </div>
 
-      <template v-for="grup in kabarGroups" :key="grup.jenis">
-        <p class="mt-3 mb-1.5 text-[11px] font-semibold text-gray-400 dark:text-gray-500">
-          {{ grup.label }}
-        </p>
+      <div class="space-y-3 mt-3">
+        <div
+          v-for="session in kabarSessions"
+          :key="session.jadwalId"
+          class="rounded-xl border border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-700/30 p-3.5"
+        >
+          <!-- Session header -->
+          <div class="flex items-start justify-between gap-3 mb-2.5">
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ session.mapel }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Kelas {{ session.kelas }} · {{ session.ruangan }} · {{ session.jamMulai }}–{{ session.jamSelesai }}
+              </p>
+            </div>
+            <span class="flex-shrink-0 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-primary-50 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 ring-1 ring-primary-200 dark:ring-primary-800">
+              {{ getTotalPelapor(session) }} murid
+            </span>
+          </div>
 
-        <div class="space-y-2">
-          <div
-            v-for="k in grup.items"
-            :key="`${grup.jenis}-${k.jadwalId}`"
-            class="relative rounded-xl border border-l-4 px-3.5 py-3"
-            :class="grup.jenis === 'BELUM_SELESAI'
-              ? 'border-gray-100 dark:border-slate-700 border-l-red-500 bg-gray-50/60 dark:bg-slate-700/30'
-              : 'border-gray-100 dark:border-slate-700 border-l-green-500 bg-gray-50/60 dark:bg-slate-700/30'"
-          >
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0 flex-1">
-                <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ k.mapel }}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Kelas {{ k.kelas }} · {{ k.ruangan }} · {{ k.jamMulai }}–{{ k.jamSelesai }}</p>
-              </div>
-
-              <div class="flex-shrink-0 flex items-center gap-2">
+          <!-- Kabar items for this session -->
+          <div class="space-y-2">
+            <!-- Belum Selesai -->
+            <div
+              v-if="session.belumSelesai"
+              class="relative rounded-lg border border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/20 p-3"
+            >
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                  <span class="flex-shrink-0 w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
+                    <svg class="w-3 h-3 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </span>
+                  <div class="min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Belum selesai</p>
+                    <p class="text-[11px] text-red-700/80 dark:text-red-300/80 mt-0.5 truncate">
+                      {{ session.belumSelesai.pelapor.slice(0, 3).join(', ') }}<template v-if="session.belumSelesai.pelapor.length > 3"> +{{ session.belumSelesai.pelapor.length - 3 }} lainnya</template>
+                    </p>
+                  </div>
+                </div>
                 <button
                   type="button"
-                  title="Hapus kabar"
-                  class="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-red-500 dark:text-red-400"
-                  @click="confirmDismiss = k"
+                  title="Tandai selesai"
+                  class="flex-shrink-0 inline-flex items-center justify-center rounded-lg p-1.5 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                  @click="confirmDismiss = session.belumSelesai!"
                 >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                   </svg>
-                  Hapus
                 </button>
+              </div>
+              <div class="flex items-center justify-end mt-1.5">
+                <span class="flex-shrink-0 text-[11px] text-gray-400 dark:text-gray-500">{{ formatRelatif(session.belumSelesai!.terakhirPada) }}</span>
               </div>
             </div>
 
-            <div class="flex items-end justify-between gap-2 mt-1.5 pr-2">
-              <p class="text-[11px] text-gray-400 dark:text-gray-500 truncate min-w-0">
-                {{ k.pelapor.slice(0, 3).join(', ') }}<template v-if="k.pelapor.length > 3"> +{{ k.pelapor.length - 3 }} lainnya</template>
-              </p>
-              <span class="flex-shrink-0 text-[11px] text-gray-400 dark:text-gray-500">{{ formatRelatif(k.terakhirPada) }}</span>
+            <!-- Sudah Beres -->
+            <div
+              v-if="session.sudahBeres"
+              class="relative rounded-lg border border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20 p-3"
+            >
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                  <span class="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
+                    <svg class="w-3 h-3 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </span>
+                  <div class="min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Sudah selesai</p>
+                    <p class="text-[11px] text-green-700/80 dark:text-green-300/80 mt-0.5 truncate">
+                      {{ session.sudahBeres.pelapor.slice(0, 3).join(', ') }}<template v-if="session.sudahBeres.pelapor.length > 3"> +{{ session.sudahBeres.pelapor.length - 3 }} lainnya</template>
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  title="Tandai selesai"
+                  class="flex-shrink-0 inline-flex items-center justify-center rounded-lg p-1.5 text-green-500 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+                  @click="confirmDismiss = session.sudahBeres!"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </button>
+              </div>
+              <div class="flex items-center justify-end mt-1.5">
+                <span class="flex-shrink-0 text-[11px] text-gray-400 dark:text-gray-500">{{ formatRelatif(session.sudahBeres!.terakhirPada) }}</span>
+              </div>
             </div>
           </div>
         </div>
-      </template>
+      </div>
     </section>
 
     <!-- Scan QR Absen -->
@@ -454,10 +557,10 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
     <!-- Modal Confirm Dismiss Kabar -->
     <ConfirmDialog
       :show="!!confirmDismiss"
-      title="Hapus Kabar"
-      :message="`Hapus kabar '${confirmDismiss?.jenis === 'BELUM_SELESAI' ? 'Belum selesai' : 'Kelas sudah beres'}' dari ${confirmDismiss?.jumlahPelapor} siswa (${confirmDismiss?.mapel})? Murid bisa mengirim ulang setelah ini.`"
+      title="Tandai Selesai"
+      :message="`Tandai kabar '${confirmDismiss?.jenis === 'BELUM_SELESAI' ? 'Belum selesai' : 'Sudah selesai'}' dari ${confirmDismiss?.jumlahPelapor} siswa (${confirmDismiss?.mapel}) sebagai sudah dibaca? Murid bisa mengirim ulang setelah ini.`"
       variant="warning"
-      confirm-label="Ya, Hapus"
+      confirm-label="Ya, Tandai Selesai"
       :loading="deletingKabar"
       @confirm="confirmDismiss && dismissKabar(confirmDismiss)"
       @cancel="confirmDismiss = null"

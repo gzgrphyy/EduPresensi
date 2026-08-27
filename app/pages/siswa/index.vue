@@ -279,54 +279,100 @@ onMounted(() => {
         </template>
       </section>
 
-      <!-- Kabar belum selesai / sudah beres -->
+      <!-- Kabar untuk Guru -->
       <section
         v-if="tampilKabarCard"
         class="mt-4 rounded-2xl border p-5 shadow-card dark:shadow-dark-card bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700"
       >
-        <p class="text-xs font-medium text-gray-400 dark:text-gray-500 mb-3">Kabar ke Guru</p>
+        <div class="flex items-baseline justify-between gap-3 mb-4">
+          <h2 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Kabar untuk Guru</h2>
+          <span class="text-xs text-slate-400 dark:text-slate-500">Pilih sesuai kondisi kelas</span>
+        </div>
 
-        <div class="space-y-2.5">
-          <!-- Belum selesai -->
+        <div v-if="kabar" class="divide-y divide-slate-100 dark:divide-slate-700 -mx-1">
+          <!-- Belum Selesai (lebih mendesak — border kiri aksen amber) -->
           <div
-            v-if="kabar?.belumSelesai.bisa && !kabar.belumSelesai.sudah && !kabarTerkirim['BELUM_SELESAI']"
-            class="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3.5"
+            v-if="kabar.belumSelesai.bisa && !kabar.belumSelesai.sudah && !kabarTerkirim['BELUM_SELESAI']"
+            class="relative pl-3 pr-2 py-3"
           >
-            <div class="flex items-center gap-2.5">
-              <svg class="w-4 h-4 flex-shrink-0 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <span class="absolute left-0 top-3 bottom-3 w-0.5 rounded-full bg-amber-400 dark:bg-amber-500"></span>
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 mt-0.5 text-slate-500 dark:text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate flex-1">Masih mapel {{ kabar.belumSelesai.mapelBerjalan?.mapel }}?</p>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs text-slate-400 dark:text-slate-500">
+                  <span class="font-medium">{{ kabar.belumSelesai.mapelBerjalan?.mapel }}</span>
+                  <span class="mx-1">·</span>
+                  {{ kabar.belumSelesai.target?.ruangan }}
+                </p>
+                <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5">
+                  Belum selesai
+                </p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Guru berikutnya: <span class="font-medium text-slate-700 dark:text-slate-300">{{ kabar.belumSelesai.target?.guru }}</span>
+                </p>
+                <button
+                  type="button"
+                  :disabled="kabarSending !== null"
+                  class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white disabled:opacity-50 transition-colors"
+                  @click="kirimKabar('BELUM_SELESAI')"
+                >
+                  Kabari {{ kabar.belumSelesai.target?.guru }}
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <button
-              type="button"
-              :disabled="kabarSending !== null"
-              class="mt-2.5 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary-500 hover:bg-primary-600 active:bg-primary-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-semibold py-2 px-3 transition-colors"
-              @click="kirimKabar('BELUM_SELESAI')"
-            >
-              Kabari Guru {{ kabar.belumSelesai.target?.mapel }} ({{ kabar.belumSelesai.target?.jamMulai }}): Kelas Belum Selesai
-            </button>
           </div>
 
-          <!-- Sudah beres -->
+          <!-- Sudah Selesai -->
           <div
-            v-if="kabar?.sudahBeres.bisa && !kabar.sudahBeres.sudah && !kabarTerkirim['SUDAH_BERES']"
-            class="rounded-xl border border-green-200 dark:border-green-800 bg-white dark:bg-slate-800 p-3.5"
+            v-if="kabar.sudahBeres.bisa && !kabar.sudahBeres.sudah && !kabarTerkirim['SUDAH_BERES']"
+            class="relative pl-3 pr-2 py-3"
           >
-            <div class="flex items-center gap-2.5">
-              <svg class="w-4 h-4 flex-shrink-0 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span class="absolute left-0 top-3 bottom-3 w-0.5 rounded-full bg-emerald-400 dark:bg-emerald-500"></span>
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 mt-0.5 text-slate-500 dark:text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
-              <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate flex-1">Kelas sudah beres?</p>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs text-slate-400 dark:text-slate-500">
+                  <span class="font-medium">{{ kabar.sudahBeres.target?.mapel }}</span>
+                  <span class="mx-1">·</span>
+                  {{ kabar.sudahBeres.target?.ruangan }}
+                </p>
+                <p class="text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5">
+                  Sudah Selesai
+                </p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Guru berikutnya: <span class="font-medium text-slate-700 dark:text-slate-300">{{ kabar.sudahBeres.target?.guru }}</span>
+                </p>
+                <button
+                  type="button"
+                  :disabled="kabarSending !== null"
+                  class="mt-2 inline-flex items-center gap-1 text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white disabled:opacity-50 transition-colors"
+                  @click="kirimKabar('SUDAH_BERES')"
+                >
+                  Kabari {{ kabar.sudahBeres.target?.guru }}
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <button
-              type="button"
-              :disabled="kabarSending !== null"
-              class="mt-2.5 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 hover:bg-green-700 active:bg-green-800 disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-semibold py-2 px-3 transition-colors"
-              @click="kirimKabar('SUDAH_BERES')"
-            >
-              Kabari Guru {{ kabar.sudahBeres.target?.mapel }}: Kelas Sudah Beres
-            </button>
+          </div>
+
+          <!-- Already sent state -->
+          <div
+            v-if="kabarTerkirim['BELUM_SELESAI'] || kabarTerkirim['SUDAH_BERES']"
+            class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 px-1 py-2"
+          >
+            <svg class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Sudah dikabari — guru sudah tahu kondisinya.</span>
           </div>
         </div>
       </section>
