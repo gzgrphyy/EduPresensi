@@ -324,7 +324,7 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
                 Kelas {{ session.kelas }} · {{ session.ruangan }} · {{ session.jamMulai }}–{{ session.jamSelesai }}
               </p>
             </div>
-            <span class="flex-shrink-0 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-primary-50 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 ring-1 ring-primary-200 dark:ring-primary-800">
+            <span class="flex-shrink-0 text-xs font-medium text-slate-500 dark:text-slate-400">
               {{ getTotalPelapor(session) }} murid
             </span>
           </div>
@@ -334,70 +334,64 @@ const totalSiswaScan = computed(() => activeSesiList.value.reduce((sum, s) => su
             <!-- Belum Selesai -->
             <div
               v-if="session.belumSelesai"
-              class="relative rounded-lg border border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/20 p-3"
+              class="relative rounded-lg border border-slate-200 dark:border-slate-700 pl-3 pr-3 py-3"
             >
+              <span class="absolute left-0 top-3 bottom-3 w-0.5 rounded-full bg-amber-400 dark:bg-amber-500"></span>
               <div class="flex items-start justify-between gap-2">
                 <div class="flex items-center gap-2 min-w-0 flex-1">
-                  <span class="flex-shrink-0 w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
-                    <svg class="w-3 h-3 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </span>
                   <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Belum selesai</p>
-                    <p class="text-[11px] text-red-700/80 dark:text-red-300/80 mt-0.5 truncate">
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                       {{ session.belumSelesai.pelapor.slice(0, 3).join(', ') }}<template v-if="session.belumSelesai.pelapor.length > 3"> +{{ session.belumSelesai.pelapor.length - 3 }} lainnya</template>
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  title="Tandai selesai"
-                  class="flex-shrink-0 inline-flex items-center justify-center rounded-lg p-1.5 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
-                  @click="confirmDismiss = session.belumSelesai!"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                </button>
-              </div>
-              <div class="flex items-center justify-end mt-1.5">
-                <span class="flex-shrink-0 text-[11px] text-gray-400 dark:text-gray-500">{{ formatRelatif(session.belumSelesai!.terakhirPada) }}</span>
+                <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                  <button
+                    type="button"
+                    title="Hapus kabar"
+                    class="inline-flex items-center gap-1 text-[11px] font-medium text-red-500 dark:text-red-400 transition-colors"
+                    @click="confirmDismiss = session.belumSelesai!"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
+                    </svg>
+                    Hapus
+                  </button>
+                  <span class="text-[11px] text-gray-400 dark:text-gray-500">{{ formatRelatif(session.belumSelesai!.terakhirPada) }}</span>
+                </div>
               </div>
             </div>
 
             <!-- Sudah Beres -->
             <div
               v-if="session.sudahBeres"
-              class="relative rounded-lg border border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20 p-3"
+              class="relative rounded-lg border border-slate-200 dark:border-slate-700 pl-3 pr-3 py-3"
             >
+              <span class="absolute left-0 top-3 bottom-3 w-0.5 rounded-full bg-emerald-400 dark:bg-emerald-500"></span>
               <div class="flex items-start justify-between gap-2">
                 <div class="flex items-center gap-2 min-w-0 flex-1">
-                  <span class="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
-                    <svg class="w-3 h-3 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </span>
                   <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Sudah selesai</p>
-                    <p class="text-[11px] text-green-700/80 dark:text-green-300/80 mt-0.5 truncate">
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                       {{ session.sudahBeres.pelapor.slice(0, 3).join(', ') }}<template v-if="session.sudahBeres.pelapor.length > 3"> +{{ session.sudahBeres.pelapor.length - 3 }} lainnya</template>
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  title="Tandai selesai"
-                  class="flex-shrink-0 inline-flex items-center justify-center rounded-lg p-1.5 text-green-500 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
-                  @click="confirmDismiss = session.sudahBeres!"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                </button>
-              </div>
-              <div class="flex items-center justify-end mt-1.5">
-                <span class="flex-shrink-0 text-[11px] text-gray-400 dark:text-gray-500">{{ formatRelatif(session.sudahBeres!.terakhirPada) }}</span>
+                <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                  <button
+                    type="button"
+                    title="Hapus kabar"
+                    class="inline-flex items-center gap-1 text-[11px] font-medium text-red-500 dark:text-red-400 transition-colors"
+                    @click="confirmDismiss = session.sudahBeres!"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
+                    </svg>
+                    Hapus
+                  </button>
+                  <span class="text-[11px] text-gray-400 dark:text-gray-500">{{ formatRelatif(session.sudahBeres!.terakhirPada) }}</span>
+                </div>
               </div>
             </div>
           </div>
