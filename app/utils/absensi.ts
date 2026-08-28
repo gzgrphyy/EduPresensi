@@ -8,11 +8,11 @@ export const statusLabels: Record<string, string> = {
 }
 
 export const statusBadgeVariant: Record<string, string> = {
-  PENDING: 'amber',
+  PENDING: 'gray',
   BELUM: 'gray',
   HADIR: 'green',
-  SAKIT: 'amber',
-  IZIN: 'blue',
+  SAKIT: 'gray',
+  IZIN: 'gray',
   ALPHA: 'red'
 }
 

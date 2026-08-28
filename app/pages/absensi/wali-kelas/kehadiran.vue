@@ -34,7 +34,19 @@ const today = (() => {
 const { data, pending } = useFetch<KelasSayaResponse>('/api/absensi/wali-kelas/kelas-saya', { immediate: true })
 
 const selectedKelasId = ref<number | null>(null)
-const tanggal = ref(today)
+const tanggal = ref<string[]>([today])
+// temporary holder for a date before adding to the array
+const tempTanggal = ref('')
+function addTanggal() {
+  if (!tempTanggal.value) return
+  if (!tanggal.value.includes(tempTanggal.value)) {
+    tanggal.value.push(tempTanggal.value)
+  }
+  tempTanggal.value = ''
+}
+function removeTanggal(dateStr: string) {
+  tanggal.value = tanggal.value.filter(d => d !== dateStr)
+}
 const marked = ref<MarkedEntry[]>([])
 const showPicker = ref(false)
 const pickerSearch = ref('')
@@ -142,7 +154,7 @@ watch(data, (d) => {
 
 async function submit() {
   if (!selectedKelasId.value) { showError('Pilih kelas terlebih dahulu'); return }
-  if (tanggal.value > today) { showError('Tidak dapat mengatur kehadiran untuk tanggal yang akan datang'); return }
+  // Removed future‑date restriction: allow tanggal array with future dates
   if (marked.value.length === 0) { showError('Tandai minimal satu murid'); return }
   submitting.value = true
   try {
@@ -199,16 +211,13 @@ async function submit() {
           </div>
           <div>
             <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Tanggal</label>
-            <input v-model="tanggal" type="date" :max="today"
-              class="w-full text-sm border border-gray-200 dark:border-slate-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-700 dark:text-gray-100" />
+            <!-- Custom date selector component -->
+            <DateChipSelector v-model="tanggal" :class-id="selectedKelasId" />
           </div>
         </div>
         <p v-if="selectedKelasId" class="mt-3 text-xs text-gray-500 dark:text-gray-400">
           <template v-if="sesiCount > 0">
             Tanggal ini memiliki <strong class="text-gray-700 dark:text-gray-300">{{ sesiCount }} sesi</strong> untuk kelas {{ selectedKelas?.nama }}.
-          </template>
-          <template v-else>
-            Tidak ada sesi di tanggal ini untuk kelas {{ selectedKelas?.nama }}.
           </template>
         </p>
       </div>
@@ -257,7 +266,13 @@ async function submit() {
         <div v-if="markedCount > 0" class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-card dark:shadow-dark-card overflow-hidden">
           <div class="px-4 sm:px-5 py-3 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
             <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">Murid ditandai</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ markedCount }} entri</p>
+            <div class="flex items-center gap-3">
+              <p class="text-xs text-gray-500 dark:text-gray-400">{{ markedCount }} murid</p>
+              <span class="text-gray-300 dark:text-slate-600">|</span>
+              <button @click="marked = []" type="button" class="text-xs font-medium text-red-500 hover:underline">
+                Hapus Semua
+              </button>
+            </div>
           </div>
           <ul class="divide-y divide-gray-100 dark:divide-slate-700">
             <li v-for="m in marked" :key="m.siswaId" class="px-4 sm:px-5 py-3 flex items-start gap-3">
@@ -325,9 +340,9 @@ async function submit() {
               { value: 'ALPHA', label: 'Alpha' }
             ]" :key="opt.value" type="button" @click="pickerStatus = opt.value as any"
               :class="pickerStatus === opt.value
-                ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 ring-1 ring-primary-500'
-                : 'border-gray-200 dark:border-slate-600 text-gray-700 dark:text-gray-200 hover:border-gray-300'"
-              class="px-3 py-2 text-sm font-medium rounded-lg border transition-colors">
+                ? 'border-gray-900 dark:border-gray-100 bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 shadow-sm'
+                : 'border-gray-200 dark:border-slate-600 bg-transparent text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-slate-500'"
+              class="px-3 py-2 text-sm font-medium rounded-lg border transition-all">
               {{ opt.label }}
             </button>
           </div>

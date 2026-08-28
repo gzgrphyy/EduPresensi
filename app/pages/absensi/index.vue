@@ -296,29 +296,7 @@ const showWaliKelasLink = computed(() => !!waliKelasData.value?.isWaliKelas)
       </svg>
     </NuxtLink>
 
-    <!-- Pengajuan Izin -->
-    <NuxtLink
-      to="/absensi/izin"
-      class="mb-4 group flex items-center gap-4 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card dark:shadow-dark-card p-4 transition-colors hover:border-primary-200 dark:hover:border-primary-700"
-    >
-      <div class="relative flex-shrink-0">
-        <svg class="w-6 h-6 text-gray-900 dark:text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-        <span v-if="pendingIzinCount > 0" class="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm">
-          {{ pendingIzinCount }}
-        </span>
-      </div>
-      <div class="flex-1 min-w-0">
-        <p class="text-sm font-bold text-gray-900 dark:text-gray-100">Pengajuan Izin / Sakit</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-          {{ pendingIzinCount > 0 ? `Ada ${pendingIzinCount} pengajuan menunggu persetujuan` : 'Lihat riwayat izin/sakit murid' }}
-        </p>
-      </div>
-      <svg class="w-4 h-4 text-gray-300 dark:text-slate-500 flex-shrink-0 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg>
-    </NuxtLink>
+    <!-- Pengajuan Izin (dihapus/disembunyikan sesuai permintaan) -->
 
     <!-- Kabar Masuk -->
     <section
