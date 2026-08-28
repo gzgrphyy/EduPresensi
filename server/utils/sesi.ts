@@ -22,12 +22,12 @@ export function hariIni(now: Date = new Date()): string {
 }
 
 export async function getOrCreateSesi(jadwalId: number, tanggal: Date) {
-  const existing = await prisma.sesiAbsensi.findUnique({
-    where: { jadwalId_tanggal: { jadwalId, tanggal } }
-  })
-  if (existing) return existing
-  return prisma.sesiAbsensi.create({
-    data: { jadwalId, tanggal, status: 'AKTIF' }
+  // Upsert atomik: aman dari race condition dengan transaksi lain
+  // yang membuat sesi untuk (jadwalId, tanggal) yang sama.
+  return prisma.sesiAbsensi.upsert({
+    where: { jadwalId_tanggal: { jadwalId, tanggal } },
+    create: { jadwalId, tanggal, status: 'AKTIF' },
+    update: {}
   })
 }
 
@@ -177,8 +177,10 @@ export async function checkinSiswaRuangan(
     let sesi = j.sesi.find(s => s.status === 'AKTIF') || j.sesi[0] || null
     if (sesi && sesi.status === 'SELESAI') continue
     if (!sesi) {
-      sesi = await prisma.sesiAbsensi.create({
-        data: { jadwalId: j.id, tanggal: today, status: 'AKTIF' }
+      sesi = await prisma.sesiAbsensi.upsert({
+        where: { jadwalId_tanggal: { jadwalId: j.id, tanggal: today } },
+        create: { jadwalId: j.id, tanggal: today, status: 'AKTIF' },
+        update: {}
       })
     }
     const existing = await prisma.absensiRequest.findUnique({
@@ -244,8 +246,10 @@ export async function checkinPtkRuangan(
     let sesi = j.sesi.find(s => s.status === 'AKTIF') || j.sesi[0] || null
     if (sesi && sesi.status === 'SELESAI') continue
     if (!sesi) {
-      sesi = await prisma.sesiAbsensi.create({
-        data: { jadwalId: j.id, tanggal: today, status: 'AKTIF' }
+      sesi = await prisma.sesiAbsensi.upsert({
+        where: { jadwalId_tanggal: { jadwalId: j.id, tanggal: today } },
+        create: { jadwalId: j.id, tanggal: today, status: 'AKTIF' },
+        update: {}
       })
     }
     const upd = await prisma.sesiAbsensi.updateMany({

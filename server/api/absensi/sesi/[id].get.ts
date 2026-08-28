@@ -20,7 +20,10 @@ export default defineEventHandler(async (event) => {
         }
       },
       requests: {
-        include: { siswa: { select: { id: true, nama: true, nisn: true } } },
+        include: {
+          siswa: { select: { id: true, nama: true, nisn: true } },
+          approver: { select: { id: true, nama: true, role: true } }
+        },
         orderBy: { scannedAt: 'asc' }
       }
     }

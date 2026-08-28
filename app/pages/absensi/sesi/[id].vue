@@ -9,6 +9,7 @@ interface SiswaItem {
     status: string
     scannedAt: string
     keterangan: string | null
+    approver?: { id: number; nama: string; role: string } | null
   } | null
 }
 
@@ -57,10 +58,15 @@ async function fetchSesi() {
     const map = new Map()
     for (const s of data.allSiswa) {
       const isPending = s.request?.status === 'PENDING'
+      const isFinalNonHadir = s.request?.status === 'SAKIT' || s.request?.status === 'IZIN' || s.request?.status === 'ALPHA'
+      const isWaliKelasSet = !!s.request?.approver && s.request.approver.id !== data.jadwal.guru.id
       map.set(s.id, {
-        checked: isPending || s.request?.status === 'HADIR',
-        status: s.request?.status === 'HADIR' ? 'HADIR' : isPending ? 'HADIR' : s.request?.status || 'BELUM',
-        keterangan: s.request?.keterangan || ''
+        checked: isPending || s.request?.status === 'HADIR' || (isFinalNonHadir && isWaliKelasSet),
+        status: s.request?.status === 'HADIR' ? 'HADIR'
+          : isPending ? 'HADIR'
+          : s.request?.status || 'BELUM',
+        keterangan: s.request?.keterangan || '',
+        isWaliKelasSet
       })
     }
     entries.value = map
@@ -237,7 +243,13 @@ onMounted(() => {
                   class="w-4 h-4 rounded border-gray-300 dark:border-slate-600 text-primary-600 dark:bg-slate-700 focus:ring-primary-500 cursor-pointer" />
               </td>
               <td class="px-3 py-3">
-                <span class="font-medium text-gray-900 dark:text-gray-100">{{ s.nama }}</span>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-medium text-gray-900 dark:text-gray-100">{{ s.nama }}</span>
+                  <span v-if="entries.get(s.id)?.isWaliKelasSet"
+                    class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                    Wali kelas
+                  </span>
+                </div>
               </td>
               <td class="px-3 py-3 text-gray-500 dark:text-gray-400 hidden sm:table-cell">{{ s.nisn }}</td>
               <td class="px-3 py-3 text-center">
