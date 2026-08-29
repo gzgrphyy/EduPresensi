@@ -417,6 +417,23 @@ onMounted(() => {
         </NuxtLink>
       </div>
 
+      <!-- Ulasan -->
+      <div class="mt-4 rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card dark:shadow-dark-card p-4 flex flex-col">
+        <p class="text-xs font-medium text-gray-400 dark:text-gray-500">Ulasan</p>
+        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-1 truncate">
+          Beri penilaian untuk pengajar
+        </p>
+        <NuxtLink
+          to="/siswa/ratings"
+          class="mt-2 self-start inline-flex items-center gap-1 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors"
+        >
+          Lihat
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </NuxtLink>
+      </div>
+
       <!-- Recent history -->
       <section class="mt-4 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-card dark:shadow-dark-card overflow-hidden">
         <header class="px-5 pt-4 pb-2 flex items-center justify-between">
