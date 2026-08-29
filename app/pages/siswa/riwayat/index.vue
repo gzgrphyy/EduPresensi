@@ -3,15 +3,23 @@ import { statusLabels, statusDotColor } from '~/utils/absensi'
 
 interface RiwayatItem {
   id: number
+  sesiId: number
   tanggal: string
   mapel: string
   kelas: string
   status: string
   keterangan: string | null
   scannedAt: string
+  guru: string
+  rating: {
+    id: number
+    rating: number
+    tags: string | null
+    komentar: string | null
+  } | null
 }
 
-const { data: riwayat, pending } = useFetch<RiwayatItem[]>('/api/siswa/riwayat', { immediate: true })
+const { data: riwayat, pending, refresh } = useFetch<RiwayatItem[]>('/api/siswa/riwayat', { immediate: true })
 
 const searchQuery = ref('')
 const filterStatus = ref('')
@@ -44,6 +52,68 @@ const showExportModal = ref(false)
 const exporting = ref(false)
 const exportBulan = ref<number | ''>(new Date().getMonth() + 1)
 const exportTahun = ref<number | ''>(new Date().getFullYear())
+
+// Rating modal state
+const showRatingModal = ref(false)
+const selectedItem = ref<RiwayatItem | null>(null)
+const currentRating = ref(5)
+const currentTags = ref<string[]>([])
+const currentKomentar = ref('')
+const submittingRating = ref(false)
+
+const availableTags = [
+  'Materi Sangat Jelas',
+  'Guru Ramah & Asik',
+  'Suasana Kondusif',
+  'Tepat Waktu',
+  'Terlalu Cepat',
+  'Kurang Jelas'
+]
+
+function openRatingModal(item: RiwayatItem) {
+  selectedItem.value = item
+  if (item.rating) {
+    currentRating.value = item.rating.rating
+    currentTags.value = item.rating.tags ? item.rating.tags.split(',') : []
+    currentKomentar.value = item.rating.komentar || ''
+  } else {
+    currentRating.value = 5
+    currentTags.value = []
+    currentKomentar.value = ''
+  }
+  showRatingModal.value = true
+}
+
+function toggleTag(tag: string) {
+  const idx = currentTags.value.indexOf(tag)
+  if (idx > -1) {
+    currentTags.value.splice(idx, 1)
+  } else {
+    currentTags.value.push(tag)
+  }
+}
+
+async function submitRating() {
+  if (!selectedItem.value) return
+  submittingRating.value = true
+  try {
+    await $fetch('/api/siswa/rating', {
+      method: 'POST',
+      body: {
+        sesiId: selectedItem.value.sesiId,
+        rating: currentRating.value,
+        tags: currentTags.value.join(','),
+        komentar: currentKomentar.value
+      }
+    })
+    showRatingModal.value = false
+    await refresh()
+  } catch (err: any) {
+    alert(err?.data?.statusMessage || 'Gagal menyimpan ulasan')
+  } finally {
+    submittingRating.value = false
+  }
+}
 
 const tahunOptions = computed(() => {
   const years = new Set<number>()
@@ -133,6 +203,7 @@ async function downloadExport() {
                 <th class="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 text-xs">Kelas</th>
                 <th class="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 text-xs">Jam</th>
                 <th class="text-center px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 text-xs">Status</th>
+                <th class="text-center px-4 py-3 font-semibold text-gray-600 dark:text-gray-300 text-xs">Ulasan / Rating</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
@@ -149,9 +220,34 @@ async function downloadExport() {
                     <span class="text-xs text-gray-600 dark:text-gray-400">{{ statusLabels[item.status] || item.status }}</span>
                   </span>
                 </td>
+                <td class="px-4 py-3 text-center">
+                  <template v-if="item.status === 'HADIR'">
+                    <button
+                      v-if="!item.rating"
+                      @click="openRatingModal(item)"
+                      class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 rounded-lg border border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors"
+                    >
+                      <svg class="w-3.5 h-3.5 fill-amber-400 text-amber-400" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.690h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.690l1.07-3.292z" />
+                      </svg>
+                      Beri Ulasan
+                    </button>
+                    <button
+                      v-else
+                      @click="openRatingModal(item)"
+                      class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors"
+                    >
+                      <svg class="w-3.5 h-3.5 fill-emerald-500 text-emerald-500" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.690h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.690l1.07-3.292z" />
+                      </svg>
+                      {{ item.rating.rating }}/5 (Ubah)
+                    </button>
+                  </template>
+                  <span v-else class="text-xs text-gray-400">-</span>
+                </td>
               </tr>
               <tr v-if="filteredData.length === 0">
-                <td colspan="5" class="px-4 py-16 text-center">
+                <td colspan="6" class="px-4 py-16 text-center">
                   <p class="text-gray-500 dark:text-gray-400 font-medium">{{ searchQuery || filterStatus ? 'Tidak ada hasil yang cocok' : 'Belum ada riwayat absensi' }}</p>
                 </td>
               </tr>
@@ -226,6 +322,81 @@ async function downloadExport() {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
           {{ exporting ? 'Mengunduh...' : 'Unduh Excel' }}
+        </button>
+      </template>
+    </BaseModal>
+
+    <!-- Rating Modal -->
+    <BaseModal :show="showRatingModal" :title="`Beri Ulasan - ${selectedItem?.mapel || ''}`" max-w="max-w-md" @close="!submittingRating && (showRatingModal = false)">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">Rating Kelas</label>
+          <div class="flex items-center gap-2">
+            <button
+              v-for="star in 5"
+              :key="star"
+              type="button"
+              @click="currentRating = star"
+              class="p-1 focus:outline-none transition-transform hover:scale-110"
+            >
+              <svg
+                class="w-8 h-8 transition-colors"
+                :class="star <= currentRating ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-200 dark:fill-slate-700 dark:text-slate-700'"
+                viewBox="0 0 20 20"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.690h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.690l1.07-3.292z" />
+              </svg>
+            </button>
+            <span class="ml-2 text-sm font-bold text-gray-700 dark:text-gray-300">{{ currentRating }} dari 5</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">Pilih Kesan / Tags</label>
+          <div class="flex flex-wrap gap-1.5">
+            <button
+              v-for="tag in availableTags"
+              :key="tag"
+              type="button"
+              @click="toggleTag(tag)"
+              class="px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors"
+              :class="currentTags.includes(tag) ? 'bg-primary-50 dark:bg-primary-950/50 border-primary-500 text-primary-600 dark:text-primary-400' : 'bg-gray-50 dark:bg-slate-700/50 border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700'"
+            >
+              {{ tag }}
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">Catatan / Komentar Tambahan (Opsional)</label>
+          <textarea
+            v-model="currentKomentar"
+            rows="3"
+            placeholder="Tuliskan masukan atau pesan untuk pengajar..."
+            class="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+          ></textarea>
+        </div>
+      </div>
+      <template #footer>
+        <button
+          type="button"
+          :disabled="submittingRating"
+          @click="showRatingModal = false"
+          class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors disabled:opacity-50"
+        >
+          Batal
+        </button>
+        <button
+          type="button"
+          :disabled="submittingRating"
+          @click="submitRating"
+          class="inline-flex items-center gap-1.5 px-5 py-2 text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 active:bg-primary-700 rounded-xl transition-colors shadow-md shadow-primary-500/30 disabled:opacity-50"
+        >
+          <svg v-if="submittingRating" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          {{ submittingRating ? 'Menyimpan...' : 'Kirim Ulasan' }}
         </button>
       </template>
     </BaseModal>

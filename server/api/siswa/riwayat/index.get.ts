@@ -16,10 +16,14 @@ export default defineEventHandler(async (event) => {
         include: {
           jadwal: {
             select: {
+              id: true,
               mapel: true,
               kelas: { select: { nama: true } },
               guru: { select: { nama: true } }
             }
+          },
+          ratings: {
+            where: { siswaId: siswa.id }
           }
         }
       }
@@ -30,12 +34,14 @@ export default defineEventHandler(async (event) => {
 
   return requests.map(r => ({
     id: r.id,
+    sesiId: r.sesiId,
     tanggal: r.sesi.tanggal,
     mapel: r.sesi.jadwal.mapel,
     kelas: r.sesi.jadwal.kelas.nama,
     status: r.status,
     keterangan: r.keterangan,
     scannedAt: r.scannedAt,
-    guru: r.sesi.jadwal.guru.nama
+    guru: r.sesi.jadwal.guru.nama,
+    rating: r.sesi.ratings[0] || null
   }))
 })

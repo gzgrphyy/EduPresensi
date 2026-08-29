@@ -25,6 +25,12 @@ export default defineEventHandler(async (event) => {
           approver: { select: { id: true, nama: true, role: true } }
         },
         orderBy: { scannedAt: 'asc' }
+      },
+      ratings: {
+        include: {
+          siswa: { select: { id: true, nama: true } }
+        },
+        orderBy: { createdAt: 'desc' }
       }
     }
   })
@@ -45,8 +51,16 @@ export default defineEventHandler(async (event) => {
     request: requestMap.get(s.id) || null
   }))
 
+  const totalRating = sesi.ratings.reduce((acc, curr) => acc + curr.rating, 0)
+  const averageRating = sesi.ratings.length ? Number((totalRating / sesi.ratings.length).toFixed(1)) : 0
+
   return {
     ...sesi,
-    allSiswa
+    allSiswa,
+    ratingSummary: {
+      average: averageRating,
+      count: sesi.ratings.length,
+      ratings: sesi.ratings
+    }
   }
 })

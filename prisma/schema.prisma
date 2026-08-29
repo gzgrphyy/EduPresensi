@@ -176,6 +176,7 @@ model Siswa {
   absensiRequests AbsensiRequest[]
   izins           Izin[]
   kabars         KabarSesi[]
+  ratings        RatingSesi[]
 
   @@map("siswa")
 }
@@ -266,6 +267,7 @@ model SesiAbsensi {
   pembuka   User?           @relation("SesiDibukaOleh", fields: [dibukaOleh], references: [id])
   ptkScanner User?          @relation("PtkScanner", fields: [ptkScanBy], references: [id])
   requests  AbsensiRequest[]
+  ratings   RatingSesi[]
 
   @@unique([jadwalId, tanggal])
   @@map("sesi_absensi")
@@ -358,4 +360,21 @@ model ExportHistory {
   user User @relation("ExportUser", fields: [userId], references: [id])
 
   @@map("export_history")
+}
+
+model RatingSesi {
+  id         Int      @id @default(autoincrement())
+  sesiId     Int      @map("sesi_id")
+  siswaId    Int      @map("siswa_id")
+  rating     Int      @db.SmallInt
+  tags       String?  @db.VarChar(255)
+  komentar   String?  @db.VarChar(500)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  sesi  SesiAbsensi @relation(fields: [sesiId], references: [id], onDelete: Cascade)
+  siswa Siswa       @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+
+  @@unique([sesiId, siswaId])
+  @@map("rating_sesi")
 }

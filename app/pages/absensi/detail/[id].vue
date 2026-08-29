@@ -13,6 +13,15 @@ interface SiswaItem {
   } | null
 }
 
+interface RatingItem {
+  id: number
+  rating: number
+  tags: string | null
+  komentar: string | null
+  createdAt: string
+  siswa: { id: number; nama: string }
+}
+
 interface SesiDetail {
   id: number
   status: string
@@ -20,15 +29,21 @@ interface SesiDetail {
   ditutupPada: string | null
   updatedAt: string
   allSiswa: SiswaItem[]
-  jadwal: {
-    mapel: string
-    jamMulai: string
-    jamSelesai: string
-    kelas: { id: number; nama: string }
-    ruangan: { id: number; nama: string }
-    guru: { id: number; nama: string }
+    jadwal: {
+      mapel: string
+      jamMulai: string
+      jamSelesai: string
+      kelas: { id: number; nama: string }
+      ruangan: { id: number; nama: string }
+      guru: { id: number; nama: string }
+    }
+  ratingSummary: {
+    average: number
+    count: number
+    ratings: RatingItem[]
   }
 }
+
 
 const route = useRoute()
 const sesiId = computed(() => parseInt(route.params.id as string))
@@ -154,38 +169,22 @@ watch(totalPages, () => { if (page.value > totalPages.value) page.value = totalP
         </dl>
       </div>
 
-      <!-- Status Summary -->
-      <div v-if="hasAnyStatus" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mb-4">
-        <div v-if="statusCount.HADIR" class="rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-3 flex items-center justify-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-green-500" />
-          <b class="text-sm font-bold text-green-600 dark:text-green-400">{{ statusCount.HADIR }}</b>
-          <span class="text-xs text-gray-500 dark:text-gray-400">Hadir</span>
+      <!-- Rating Summary -->
+      <div v-if="sesi?.ratingSummary?.count" class="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4 mb-4 shadow-card dark:shadow-dark-card">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-300">Ulasan Kelas</h3>
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+            {{ sesi.ratingSummary.average.toFixed(1) }}/5 ({{ sesi.ratingSummary.count }} ulasan)
+          </span>
         </div>
-        <div v-if="statusCount.SAKIT" class="rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-3 flex items-center justify-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-amber-500" />
-          <b class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ statusCount.SAKIT }}</b>
-          <span class="text-xs text-gray-500 dark:text-gray-400">Sakit</span>
-        </div>
-        <div v-if="statusCount.IZIN" class="rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-3 flex items-center justify-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-blue-500" />
-          <b class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ statusCount.IZIN }}</b>
-          <span class="text-xs text-gray-500 dark:text-gray-400">Izin</span>
-        </div>
-        <div v-if="statusCount.ALPHA" class="rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-3 flex items-center justify-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-red-500" />
-          <b class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ statusCount.ALPHA }}</b>
-          <span class="text-xs text-gray-500 dark:text-gray-400">Alpha</span>
-        </div>
-        <div v-if="statusCount.PENDING" class="rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-3 flex items-center justify-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-amber-400" />
-          <b class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ statusCount.PENDING }}</b>
-          <span class="text-xs text-gray-500 dark:text-gray-400">Menunggu</span>
-        </div>
-        <div v-if="statusCount.BELUM" class="rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-3 flex items-center justify-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500" />
-          <b class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ statusCount.BELUM }}</b>
-          <span class="text-xs text-gray-500 dark:text-gray-400">Belum Absen</span>
-        </div>
+        <ul class="space-y-1 text-xs text-gray-600 dark:text-gray-400 max-h-48 overflow-y-auto">
+          <li v-for="r in sesi.ratingSummary.ratings" :key="r.id" class="flex items-start">
+            <span class="mr-2 font-medium text-gray-800 dark:text-gray-200">{{ r.siswa.nama }}:</span>
+            <span class="mr-1 text-amber-500">{{ '★'.repeat(r.rating) }}</span>
+            <span v-if="r.tags" class="italic text-gray-500 dark:text-gray-400">({{ r.tags }})</span>
+            <span v-if="r.komentar"> - {{ r.komentar }}</span>
+          </li>
+        </ul>
       </div>
 
       <!-- Search & Filter -->
