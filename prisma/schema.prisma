@@ -226,6 +226,7 @@ model KabarSesi {
   jadwalId  Int        @map("jadwal_id")
   jenis     KabarJenis @default(BELUM_SELESAI)
   tanggal   DateTime   @db.Date
+  dismissed Boolean    @default(false)
   createdAt DateTime   @default(now()) @map("created_at")
 
   siswa  Siswa            @relation(fields: [siswaId], references: [id])

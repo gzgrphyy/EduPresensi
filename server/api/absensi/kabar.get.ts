@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   const tNow = timeToMinutes(currentTimeHHMM(now))
 
   const kabars = await prisma.kabarSesi.findMany({
-    where: { tanggal: today, jadwal: { guruId: session.user.id } },
+    where: { tanggal: today, dismissed: false, jadwal: { guruId: session.user.id } },
     include: {
       siswa: { select: { nama: true } },
       jadwal: {

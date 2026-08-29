@@ -58,6 +58,14 @@ const { data: kabar, refresh: refreshKabar } = useFetch<KabarStatus>('/api/siswa
 const kabarSending = ref<'BELUM_SELESAI' | 'SUDAH_BERES' | null>(null)
 const kabarTerkirim = ref<Record<string, boolean>>({})
 
+const showStatusCard = ref(true)
+const confirmHideStatus = ref(false)
+
+function hideStatusCard() {
+  showStatusCard.value = false
+  confirmHideStatus.value = false
+}
+
 async function kirimKabar(jenis: 'BELUM_SELESAI' | 'SUDAH_BERES') {
   const grup = jenis === 'BELUM_SELESAI' ? kabar.value?.belumSelesai : kabar.value?.sudahBeres
   if (!grup?.target || kabarSending.value) return
@@ -90,6 +98,8 @@ interface JadwalMingguanItem {
   hari: string
   jamMulai: string
   jamSelesai: string
+  ruangan: { id: number; nama: string }
+  guru: { id: number; nama: string }
 }
 
 const { data: jadwalMingguan } = useFetch<{ hariOrder: string[]; grouped: Record<string, JadwalMingguanItem[]> }>('/api/siswa/jadwal', { immediate: true })
@@ -100,6 +110,9 @@ const totalJadwalMinggu = computed(() =>
 const jumlahHariMinggu = computed(() =>
   Object.keys(jadwalMingguan.value?.grouped || {}).length
 )
+
+const { data: ratingsData } = useFetch<{ sessions: { sesiId: number; tanggal: string; mapel: string; kelas: string; guru: string; rating: { rating: number } | null }[]; stats: { totalDirate: number; totalHadir: number; rataRata: number | null } }>('/api/siswa/ratings', { immediate: true })
+
 
 const greeting = computed(() => {
   const h = new Date().getHours()
@@ -173,6 +186,7 @@ onMounted(() => {
     <template v-else-if="data">
       <!-- Status card -->
       <section
+        v-if="showStatusCard"
         class="rounded-2xl border p-5 shadow-card dark:shadow-dark-card"
         :class="{
           'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/40 dark:to-green-900/20 border-green-200 dark:border-green-800': data.todayStatus.state === 'PRESENT',
@@ -189,10 +203,19 @@ onMounted(() => {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <div>
+            <div class="flex-1">
               <p class="text-sm font-medium text-green-800 dark:text-green-200">Status hari ini</p>
               <p class="text-xl font-bold text-green-900 dark:text-green-100">{{ statusLabels[data.todayStatus.status || ''] || data.todayStatus.status }}</p>
             </div>
+            <button
+              @click="confirmHideStatus = true"
+              class="p-1.5 rounded-lg text-green-600/60 dark:text-green-400/60 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex-shrink-0"
+              title="Sembunyikan"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
           <dl class="space-y-1.5 text-sm">
             <div class="flex items-center justify-between gap-3">
@@ -222,10 +245,19 @@ onMounted(() => {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <div>
+            <div class="flex-1">
               <p class="text-sm font-medium text-amber-800 dark:text-amber-200">Menunggu konfirmasi guru</p>
               <p v-if="data.todayStatus.scannedAt" class="text-xs text-amber-700/80 dark:text-amber-300/80">Absen pukul {{ formatJam(data.todayStatus.scannedAt) }}</p>
             </div>
+            <button
+              @click="confirmHideStatus = true"
+              class="p-1.5 rounded-lg text-amber-600/60 dark:text-amber-400/60 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex-shrink-0"
+              title="Sembunyikan"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
           <p class="text-sm text-amber-800 dark:text-amber-200">
             {{ data.todayStatus.mapel }} — {{ data.todayStatus.kelas }}{{ data.todayStatus.ruangan ? ` · ${data.todayStatus.ruangan}` : '' }} {{ data.todayStatus.jamMulai ? `(${data.todayStatus.jamMulai}-${data.todayStatus.jamSelesai})` : '' }}
@@ -401,38 +433,44 @@ onMounted(() => {
       </div>
 
       <!-- Jadwal Minggu Ini -->
-      <div class="mt-4 rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card dark:shadow-dark-card p-4 flex flex-col">
-        <p class="text-xs font-medium text-gray-400 dark:text-gray-500">Jadwal Minggu Ini</p>
-        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-1 truncate">
-          {{ totalJadwalMinggu > 0 ? `${totalJadwalMinggu} sesi · ${jumlahHariMinggu} hari` : 'Belum ada' }}
-        </p>
-        <NuxtLink
-          to="/siswa/jadwal"
-          class="mt-2 self-start inline-flex items-center gap-1 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors"
-        >
-          Lihat
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      <NuxtLink
+        to="/siswa/jadwal"
+        class="mt-4 group flex items-center gap-4 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card dark:shadow-dark-card p-4 transition-colors hover:border-primary-200 dark:hover:border-primary-700"
+      >
+        <div class="relative flex-shrink-0">
+          <svg class="w-6 h-6 text-gray-900 dark:text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-        </NuxtLink>
-      </div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-bold text-gray-900 dark:text-gray-100">Jadwal Minggu Ini</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            {{ totalJadwalMinggu > 0 ? `${totalJadwalMinggu} sesi · ${jumlahHariMinggu} hari` : 'Belum ada jadwal' }}
+          </p>
+        </div>
+        <svg class="w-4 h-4 text-gray-300 dark:text-slate-500 flex-shrink-0 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </NuxtLink>
 
       <!-- Ulasan -->
-      <div class="mt-4 rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card dark:shadow-dark-card p-4 flex flex-col">
-        <p class="text-xs font-medium text-gray-400 dark:text-gray-500">Ulasan</p>
-        <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-1 truncate">
-          Beri penilaian untuk pengajar
-        </p>
-        <NuxtLink
-          to="/siswa/ratings"
-          class="mt-2 self-start inline-flex items-center gap-1 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors"
-        >
-          Lihat
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      <NuxtLink
+        to="/siswa/ratings"
+        class="mt-4 group flex items-center gap-4 rounded-2xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-card dark:shadow-dark-card p-4 transition-colors hover:border-primary-200 dark:hover:border-primary-700"
+      >
+        <div class="relative flex-shrink-0">
+          <svg class="w-6 h-6 text-amber-500 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
           </svg>
-        </NuxtLink>
-      </div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-bold text-gray-900 dark:text-gray-100">Ulasan Saya</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Beri rating dan ulasan untuk sesi pelajaran yang sudah kamu ikuti</p>
+        </div>
+        <svg class="w-4 h-4 text-gray-300 dark:text-slate-500 flex-shrink-0 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </NuxtLink>
 
       <!-- Recent history -->
       <section class="mt-4 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-card dark:shadow-dark-card overflow-hidden">
@@ -469,5 +507,15 @@ onMounted(() => {
         </div>
       </section>
     </template>
+
+    <ConfirmDialog
+      :show="confirmHideStatus"
+      title="Sembunyikan Status"
+      message="Status kehadiran akan disembunyikan dari beranda. Data absensi tetap tersimpan."
+      variant="warning"
+      confirm-label="Ya, Sembunyikan"
+      @confirm="hideStatusCard"
+      @cancel="confirmHideStatus = false"
+    />
   </StudentLayout>
 </template>

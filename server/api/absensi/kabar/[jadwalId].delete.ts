@@ -32,14 +32,16 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Jadwal tidak ditemukan' })
   }
 
-  const deleted = await prisma.kabarSesi.deleteMany({
+  const updated = await prisma.kabarSesi.updateMany({
     where: {
       jadwalId,
       jenis,
       tanggal: todayDate(),
+      dismissed: false,
       jadwal: { guruId: session.user.id }
-    }
+    },
+    data: { dismissed: true }
   })
 
-  return { success: true, deleted: deleted.count }
+  return { success: true, dismissed: updated.count }
 })
