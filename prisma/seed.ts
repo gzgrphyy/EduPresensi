@@ -126,16 +126,21 @@ async function main() {
   console.log('⏳ Menyiapkan data seed...')
 
   // Bersihkan data lama (urutan reverse dependensi)
+  await prisma.attendanceAudit.deleteMany()
   await prisma.absensiRequest.deleteMany()
   await prisma.izin.deleteMany()
+  await prisma.ratingSesi.deleteMany()
+  await prisma.kabarSesi.deleteMany()
   await prisma.sesiAbsensi.deleteMany()
+  await prisma.guruKetidakhadiran.deleteMany()
   await prisma.jadwalPelajaran.deleteMany()
   await prisma.ptkPendamping.deleteMany()
   await prisma.siswa.deleteMany()
   await prisma.kelas.deleteMany()
-  await prisma.semester.deleteMany()
   await prisma.ruangan.deleteMany()
+  await prisma.exportHistory.deleteMany()
   await prisma.user.deleteMany()
+  await prisma.semester.deleteMany()
   await prisma.pengaturan.deleteMany()
   await prisma.tahunAjaran.deleteMany()
 
@@ -146,7 +151,7 @@ async function main() {
   const siswaHash = hashPassword('Siswa123')
 
   // ============================================
-  // ADMIN
+  // ADMIN & PIKET
   // ============================================
   await prisma.user.create({
     data: {
@@ -154,6 +159,15 @@ async function main() {
       email: 'admin@absensi.test',
       passwordHash: adminHash,
       role: 'ADMIN'
+    }
+  })
+
+  await prisma.user.create({
+    data: {
+      nama: 'Petugas Piket Ruang Piket',
+      email: 'piket@absensi.test',
+      passwordHash: hashPassword('Piket123'),
+      role: 'GURU'
     }
   })
 

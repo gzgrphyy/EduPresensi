@@ -31,6 +31,17 @@ export default defineEventHandler(async (event) => {
           siswa: { select: { id: true, nama: true } }
         },
         orderBy: { createdAt: 'desc' }
+      },
+      audits: {
+        include: {
+          user: { select: { id: true, nama: true, role: true } }
+        },
+        orderBy: { createdAt: 'asc' }
+      },
+      guruBerhalangan: {
+        include: {
+          guru: { select: { id: true, nama: true } }
+        }
       }
     }
   })

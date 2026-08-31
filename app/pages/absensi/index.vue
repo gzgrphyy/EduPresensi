@@ -261,6 +261,53 @@ const waliKelasSesi = computed(() =>
   activeSesiList.value.filter(s => s.jadwal.kelas.waliKelasId === user.value?.id)
 )
 const showWaliKelasLink = computed(() => !!waliKelasData.value?.isWaliKelas)
+
+// Fitur Ajukan Tidak Masuk (Skenario A)
+const showBerhalanganModal = ref(false)
+const berhalanganTanggal = ref(new Date().toISOString().split('T')[0])
+const berhalanganAlasan = ref('SAKIT')
+const berhalanganKeterangan = ref('')
+const submittingBerhalangan = ref(false)
+
+const { data: activeBerhalangan, refresh: refreshBerhalangan } = useFetch('/api/guru/berhalangan', {
+  immediate: true
+})
+
+async function submitBerhalangan() {
+  submittingBerhalangan.value = true
+  errorMsg.value = ''
+  try {
+    const res: any = await $fetch('/api/guru/berhalangan', {
+      method: 'POST',
+      body: {
+        tanggal: berhalanganTanggal.value,
+        alasan: berhalanganAlasan.value,
+        keterangan: berhalanganKeterangan.value
+      }
+    })
+    if (res.success) {
+      showSuccess('Pengajuan tidak masuk berhasil dikirim.')
+      showBerhalanganModal.value = false
+      berhalanganKeterangan.value = ''
+      refreshBerhalangan()
+    }
+  } catch (err: any) {
+    showError(err?.data?.statusMessage || 'Gagal mengajukan tidak masuk')
+  } finally {
+    submittingBerhalangan.value = false
+  }
+}
+
+async function cancelBerhalangan(id: number) {
+  errorMsg.value = ''
+  try {
+    await $fetch(`/api/guru/berhalangan/${id}`, { method: 'DELETE' })
+    showSuccess('Pengajuan tidak masuk dibatalkan.')
+    refreshBerhalangan()
+  } catch (err: any) {
+    showError(err?.data?.statusMessage || 'Gagal membatalkan pengajuan')
+  }
+}
 </script>
 
 <template>
@@ -276,7 +323,45 @@ const showWaliKelasLink = computed(() => !!waliKelasData.value?.isWaliKelas)
     <Notification type="error" :message="errorMsg" :show="!!errorMsg" @dismiss="errorMsg = ''" />
     <Notification type="success" :message="successMsg" :show="!!successMsg" @dismiss="successMsg = ''" />
 
-    <!-- Catat Pengecualian (wali kelas) -->
+    <!-- Ajukan Tidak Masuk Link -->
+    <div class="mb-4">
+      <button
+        @click="showBerhalanganModal = true"
+        class="w-full group flex items-center gap-3 rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/20 p-4 text-left transition-colors hover:bg-amber-100/50 dark:hover:bg-amber-900/40"
+      >
+        <div class="p-2.5 rounded-xl bg-amber-500 text-white flex-shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-bold text-gray-900 dark:text-gray-100">Ajukan Tidak Masuk</p>
+          <p class="text-xs text-amber-700 dark:text-amber-300 mt-0.5">Lapor sakit/izin/dinas</p>
+        </div>
+      </button>
+    </div>
+
+    <!-- Active Berhalangan Submissions Badge -->
+    <div v-if="activeBerhalangan?.list && activeBerhalangan.list.length > 0" class="mb-4 space-y-2">
+      <div
+        v-for="item in activeBerhalangan.list"
+        :key="item.id"
+        class="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 text-xs"
+      >
+        <div>
+          <p class="font-bold text-amber-900 dark:text-amber-200">
+            Tidak Masuk: {{ new Date(item.tanggal).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) }} — {{ item.alasan }}
+          </p>
+          <p v-if="item.keterangan" class="text-amber-700 dark:text-amber-300 mt-0.5">{{ item.keterangan }}</p>
+        </div>
+        <button
+          @click="cancelBerhalangan(item.id)"
+          class="px-3 py-1.5 font-semibold text-red-600 dark:text-red-400 bg-white dark:bg-slate-800 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-50 transition-colors"
+        >
+          Batalkan
+        </button>
+      </div>
+    </div>
     <NuxtLink
       v-if="showWaliKelasLink"
       to="/absensi/wali-kelas/kehadiran"
@@ -611,16 +696,70 @@ const showWaliKelasLink = computed(() => !!waliKelasData.value?.isWaliKelas)
       @cancel="confirmClose = null"
     />
 
-    <!-- Modal Confirm Dismiss Kabar -->
-    <ConfirmDialog
-      :show="!!confirmDismiss"
-      title="Tandai Selesai"
-      :message="`Tandai kabar '${confirmDismiss?.jenis === 'BELUM_SELESAI' ? 'Belum selesai' : 'Sudah selesai'}' dari ${confirmDismiss?.jumlahPelapor} siswa (${confirmDismiss?.mapel}) sebagai sudah dibaca? Murid bisa mengirim ulang setelah ini.`"
-      variant="warning"
-      confirm-label="Ya, Tandai Selesai"
-      :loading="deletingKabar"
-      @confirm="confirmDismiss && dismissKabar(confirmDismiss)"
-      @cancel="confirmDismiss = null"
-    />
+    <!-- Modal Ajukan Tidak Masuk -->
+    <div v-if="showBerhalanganModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-xl">
+        <header class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-slate-700 mb-4">
+          <h3 class="text-base font-bold text-gray-900 dark:text-gray-100">Ajukan Tidak Masuk Mengajar</h3>
+          <button @click="showBerhalanganModal = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </header>
+
+        <form @submit.prevent="submitBerhalangan" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Tanggal</label>
+            <input
+              v-model="berhalanganTanggal"
+              type="date"
+              required
+              class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Alasan</label>
+            <select
+              v-model="berhalanganAlasan"
+              class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="SAKIT">Sakit</option>
+              <option value="IZIN">Izin</option>
+              <option value="DINAS_LUAR">Dinas Luar</option>
+              <option value="LAINNYA">Lainnya</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Keterangan / Catatan (Opsional)</label>
+            <textarea
+              v-model="berhalanganKeterangan"
+              rows="3"
+              placeholder="Tambahkan keterangan jika perlu..."
+              class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500"
+            ></textarea>
+          </div>
+
+          <footer class="pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              @click="showBerhalanganModal = false"
+              class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              :disabled="submittingBerhalangan"
+              class="px-5 py-2 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-md transition-colors disabled:opacity-50"
+            >
+              {{ submittingBerhalangan ? 'Mengirim...' : 'Kirim Pengajuan' }}
+            </button>
+          </footer>
+        </form>
+      </div>
+    </div>
   </PTKLayout>
 </template>

@@ -96,6 +96,8 @@ model User {
   tanggapanIzin   Izin[]            @relation("PenanggapIzin")
   exportHistories ExportHistory[]   @relation("ExportUser")
   siswa           Siswa?
+  ketidakhadiranGuru GuruKetidakhadiran[] @relation("GuruKetidakhadiranUser")
+  attendanceAudits   AttendanceAudit[]    @relation("AuditUser")
 
   @@map("users")
 }
@@ -253,22 +255,32 @@ model PtkPendamping {
 }
 
 model SesiAbsensi {
-  id         Int        @id @default(autoincrement())
-  jadwalId   Int        @map("jadwal_id")
-  tanggal    DateTime   @db.Date
-  status     StatusSesi
-  dibukaOleh Int?       @map("dibuka_oleh")
-  ptkScanAt  DateTime?  @map("ptk_scan_at")
-  ptkScanBy  Int?       @map("ptk_scan_by")
-  createdAt  DateTime   @default(now()) @map("created_at")
-  updatedAt  DateTime   @updatedAt @map("updated_at")
-  ditutupPada DateTime? @map("ditutup_pada")
+  id                 Int        @id @default(autoincrement())
+  jadwalId           Int        @map("jadwal_id")
+  tanggal            DateTime   @db.Date
+  status             StatusSesi
+  dibukaOleh         Int?       @map("dibuka_oleh")
+  ptkScanAt          DateTime?  @map("ptk_scan_at")
+  ptkScanBy          Int?       @map("ptk_scan_by")
+  isGuruBerhalangan  Boolean    @default(false) @map("is_guru_berhalangan")
+  guruBerhalanganId  Int?       @map("guru_berhalangan_id")
+  approvedByRole     String?    @map("approved_by_role") @db.VarChar(30)
+  petugasPiketNama   String?    @map("petugas_piket_nama") @db.VarChar(100)
+  isRevised          Boolean    @default(false) @map("is_revised")
+  revisiAt           DateTime?  @map("revisi_at")
+  revisiBy           Int?       @map("revisi_by")
+  alasanRevisi       String?    @map("alasan_revisi") @db.VarChar(255)
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
+  ditutupPada        DateTime?  @map("ditutup_pada")
 
-  jadwal    JadwalPelajaran @relation(fields: [jadwalId], references: [id])
-  pembuka   User?           @relation("SesiDibukaOleh", fields: [dibukaOleh], references: [id])
-  ptkScanner User?          @relation("PtkScanner", fields: [ptkScanBy], references: [id])
-  requests  AbsensiRequest[]
-  ratings   RatingSesi[]
+  jadwal           JadwalPelajaran     @relation(fields: [jadwalId], references: [id])
+  pembuka          User?               @relation("SesiDibukaOleh", fields: [dibukaOleh], references: [id])
+  ptkScanner       User?               @relation("PtkScanner", fields: [ptkScanBy], references: [id])
+  guruBerhalangan  GuruKetidakhadiran? @relation(fields: [guruBerhalanganId], references: [id])
+  requests         AbsensiRequest[]
+  ratings          RatingSesi[]
+  audits           AttendanceAudit[]
 
   @@unique([jadwalId, tanggal])
   @@map("sesi_absensi")
@@ -378,4 +390,43 @@ model RatingSesi {
 
   @@unique([sesiId, siswaId])
   @@map("rating_sesi")
+}
+
+enum AlasanKetidakhadiranGuru {
+  SAKIT
+  IZIN
+  DINAS_LUAR
+  LAINNYA
+}
+
+model GuruKetidakhadiran {
+  id          Int                      @id @default(autoincrement())
+  guruId      Int                      @map("guru_id")
+  tanggal     DateTime                 @db.Date
+  alasan      AlasanKetidakhadiranGuru
+  keterangan  String?                  @db.VarChar(255)
+  status      String                   @default("AKTIF") @db.VarChar(20)
+  createdAt   DateTime                 @default(now()) @map("created_at")
+  updatedAt   DateTime                 @updatedAt @map("updated_at")
+
+  guru User          @relation("GuruKetidakhadiranUser", fields: [guruId], references: [id])
+  sesi SesiAbsensi[]
+
+  @@map("guru_ketidakhadiran")
+}
+
+model AttendanceAudit {
+  id               Int      @id @default(autoincrement())
+  sesiId           Int      @map("sesi_id")
+  action           String   @db.VarChar(50)
+  performedBy      Int      @map("performed_by")
+  role             String   @db.VarChar(50)
+  petugasPiketNama String?  @map("petugas_piket_nama") @db.VarChar(100)
+  detail           String?  @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  sesi SesiAbsensi @relation(fields: [sesiId], references: [id], onDelete: Cascade)
+  user User        @relation("AuditUser", fields: [performedBy], references: [id])
+
+  @@map("attendance_audit")
 }

@@ -19,6 +19,12 @@ interface SesiDetail {
   tanggal: string
   ditutupPada: string | null
   updatedAt: string
+  approvedByRole: string | null
+  petugasPiketNama: string | null
+  isGuruBerhalangan: boolean
+  isRevised: boolean
+  revisiAt: string | null
+  alasanRevisi: string | null
   allSiswa: SiswaItem[]
   jadwal: {
     mapel: string
@@ -28,6 +34,15 @@ interface SesiDetail {
     ruangan: { id: number; nama: string }
     guru: { id: number; nama: string }
   }
+  audits: {
+    id: number
+    action: string
+    role: string
+    petugasPiketNama: string | null
+    detail: string | null
+    createdAt: string
+    user: { nama: string; role: string }
+  }[]
 }
 
 const route = useRoute()
@@ -39,6 +54,45 @@ const loading = ref(true)
 const submitting = ref(false)
 const errorMsg = ref('')
 const successMsg = ref('')
+
+const showRevisiModal = ref(false)
+const alasanRevisiInput = ref('')
+const submittingRevisi = ref(false)
+
+async function submitRevisi() {
+  if (!alasanRevisiInput.value.trim() || alasanRevisiInput.value.trim().length < 3) {
+    showError('Alasan revisi wajib diisi minimal 3 karakter')
+    return
+  }
+  submittingRevisi.value = true
+  errorMsg.value = ''
+  try {
+    const listEntries = Array.from(entries.value.entries()).map(([siswaId, val]) => ({
+      siswaId,
+      status: val.status as any,
+      keterangan: val.keterangan || null
+    }))
+
+    const res: any = await $fetch(`/api/absensi/sesi/${sesiId.value}/revisi`, {
+      method: 'POST',
+      body: {
+        alasanRevisi: alasanRevisiInput.value.trim(),
+        entries: listEntries
+      }
+    })
+
+    if (res.success) {
+      showSuccess('Revisi kehadiran berhasil disimpan!')
+      showRevisiModal.value = false
+      alasanRevisiInput.value = ''
+      await fetchSesi()
+    }
+  } catch (err: any) {
+    showError(err?.data?.statusMessage || 'Gagal menyimpan revisi')
+  } finally {
+    submittingRevisi.value = false
+  }
+}
 
 function showError(msg: string) {
   errorMsg.value = msg
@@ -200,6 +254,33 @@ onMounted(() => {
           <dd class="font-semibold text-gray-900 dark:text-gray-100 truncate">{{ sesi.jadwal.guru.nama }}</dd>
         </div>
       </dl>
+
+      <!-- Approval & Revision Badges -->
+      <div class="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700 space-y-2 text-xs">
+        <div v-if="sesi.approvedByRole" class="flex items-center justify-between gap-2">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 font-medium">
+            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Diapprove oleh: {{ sesi.approvedByRole === 'GURU_PIKET' ? `Guru Piket (${sesi.petugasPiketNama || 'Petugas'})` : sesi.approvedByRole }}
+          </span>
+          <button
+            v-if="sesi.approvedByRole && sesi.status === 'SELESAI'"
+            @click="showRevisiModal = true"
+            class="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg shadow transition-colors"
+          >
+            Revisi Kehadiran
+          </button>
+        </div>
+        <div v-else class="text-amber-600 dark:text-amber-400 font-medium">
+          Status: Menunggu Approval
+        </div>
+
+        <div v-if="sesi.isRevised" class="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200">
+          <p class="font-semibold">Direvisi pada {{ new Date(sesi.revisiAt!).toLocaleString('id-ID') }}</p>
+          <p class="italic text-[11px] mt-0.5">Alasan: "{{ sesi.alasanRevisi }}"</p>
+        </div>
+      </div>
     </div>
 
     <Notification type="error" :message="errorMsg" :show="!!errorMsg" @dismiss="errorMsg = ''" />
@@ -292,6 +373,51 @@ onMounted(() => {
           <svg v-if="submitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
           {{ submitting ? 'Menyimpan...' : sesi.status === 'SELESAI' ? 'Simpan Koreksi' : 'Konfirmasi Kehadiran' }}
         </button>
+      </div>
+    </div>
+
+    <!-- Modal Revisi Kehadiran oleh Guru Asli -->
+    <div v-if="showRevisiModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 shadow-xl">
+        <header class="flex items-center justify-between pb-4 border-b border-gray-100 dark:border-slate-700 mb-4">
+          <h3 class="text-base font-bold text-gray-900 dark:text-gray-100">Revisi Kehadiran Sesi</h3>
+          <button @click="showRevisiModal = false" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </header>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+              Alasan Revisi <span class="text-red-500">*</span>
+            </label>
+            <textarea
+              v-model="alasanRevisiInput"
+              rows="3"
+              placeholder="Contoh: Guru masuk terlambat, koreksi data, dll..."
+              class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500"
+            ></textarea>
+            <p class="text-[11px] text-gray-400 mt-1">Perubahan status kehadiran per siswa akan mengikuti tabel utama di bawah.</p>
+          </div>
+
+          <footer class="pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-end gap-3">
+            <button
+              @click="showRevisiModal = false"
+              class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
+            >
+              Batal
+            </button>
+            <button
+              @click="submitRevisi"
+              :disabled="submittingRevisi"
+              class="px-5 py-2 text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-md transition-colors disabled:opacity-50"
+            >
+              {{ submittingRevisi ? 'Menyimpan...' : 'Simpan Revisi' }}
+            </button>
+          </footer>
+        </div>
       </div>
     </div>
   </PTKLayout>
