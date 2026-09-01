@@ -44,12 +44,6 @@ function persentase(hadir: number, total: number) {
   return Math.round((hadir / total) * 100)
 }
 
-function persentaseColor(p: number) {
-  if (p >= 90) return 'text-green-600 dark:text-green-400'
-  if (p >= 75) return 'text-amber-600 dark:text-amber-400'
-  return 'text-red-600 dark:text-red-400'
-}
-
 function fmtDate(iso: string) {
   const d = new Date(iso)
   if (isNaN(d.getTime())) return '-'
@@ -67,8 +61,7 @@ function fmtDate(iso: string) {
 
     <!-- Date Picker -->
     <div class="flex items-center gap-2 mb-4">
-      <label class="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">Tanggal</label>
-      <input v-model="selectedDate" type="date" class="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary-500" />
+      <BaseCalendar v-model="selectedDate" />
     </div>
 
     <!-- Loading -->
@@ -78,18 +71,27 @@ function fmtDate(iso: string) {
 
     <template v-else>
       <!-- Summary Cards -->
-      <div class="grid grid-cols-3 gap-2 mb-4">
-        <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 px-3 py-2.5 text-center">
-          <p class="text-lg font-bold text-primary-600 dark:text-primary-400 leading-tight">{{ totalSesi }}</p>
-          <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Total Sesi</p>
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200/80 dark:border-slate-700/80 border-l-[3px] border-l-gray-200 dark:border-l-gray-600 px-4 py-3.5">
+          <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total Sesi</span>
+          <div class="mt-1.5 flex items-baseline gap-1.5">
+            <span class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">{{ totalSesi }}</span>
+            <span class="text-xs text-gray-400 dark:text-gray-500">sesi</span>
+          </div>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 px-3 py-2.5 text-center">
-          <p class="text-lg font-bold text-emerald-600 dark:text-emerald-400 leading-tight">{{ totalHadir }}</p>
-          <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Hadir</p>
+        <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200/80 dark:border-slate-700/80 border-l-[3px] border-l-gray-200 dark:border-l-gray-600 px-4 py-3.5">
+          <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Hadir</span>
+          <div class="mt-1.5 flex items-baseline gap-1.5">
+            <span class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">{{ totalHadir }}</span>
+            <span class="text-xs text-gray-400 dark:text-gray-500">siswa</span>
+          </div>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 px-3 py-2.5 text-center">
-          <p class="text-lg font-bold text-gray-900 dark:text-gray-100 leading-tight">{{ totalSiswa }}</p>
-          <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">Total Siswa</p>
+        <div class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200/80 dark:border-slate-700/80 border-l-[3px] border-l-gray-200 dark:border-l-gray-600 px-4 py-3.5">
+          <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Total Siswa</span>
+          <div class="mt-1.5 flex items-baseline gap-1.5">
+            <span class="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">{{ totalSiswa }}</span>
+            <span class="text-xs text-gray-400 dark:text-gray-500">siswa</span>
+          </div>
         </div>
       </div>
 
@@ -114,7 +116,7 @@ function fmtDate(iso: string) {
           <!-- Top: Time + Persentase -->
           <div class="flex items-center justify-between mb-1.5">
             <p class="text-xs font-bold text-gray-900 dark:text-gray-100">{{ item.jamMulai }} - {{ item.jamSelesai }}</p>
-            <span class="text-xs font-semibold" :class="persentaseColor(persentase(item.hadir, item.totalSiswa))">
+            <span class="text-xs font-semibold text-gray-900 dark:text-gray-100">
               {{ persentase(item.hadir, item.totalSiswa) }}%
             </span>
           </div>
@@ -122,28 +124,28 @@ function fmtDate(iso: string) {
           <!-- Mapel + Kelas -->
           <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-tight">{{ item.mapel }}</p>
           <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ item.guru }} · {{ item.kelas }}</p>
-          <p v-if="item.alasan" class="text-xs text-amber-600 dark:text-amber-400 mt-0.5">PTK Berhalangan: {{ alasanLabels[item.alasan] || item.alasan }}</p>
+          <p v-if="item.alasan" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">PTK Berhalangan: {{ alasanLabels[item.alasan] || item.alasan }}</p>
 
           <!-- Attendance Summary -->
           <div class="flex items-center gap-3 mt-2 pt-2 border-t border-gray-100 dark:border-slate-700">
             <span class="flex items-center gap-1 text-[11px]">
               <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span class="text-emerald-600 dark:text-emerald-400 font-medium">{{ item.hadir }}</span>
+              <span class="text-gray-600 dark:text-gray-400 font-medium">{{ item.hadir }}</span>
               <span class="text-gray-400">Hadir</span>
             </span>
             <span class="flex items-center gap-1 text-[11px]">
               <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-              <span class="text-amber-600 dark:text-amber-400 font-medium">{{ item.sakit }}</span>
+              <span class="text-gray-600 dark:text-gray-400 font-medium">{{ item.sakit }}</span>
               <span class="text-gray-400">Sakit</span>
             </span>
             <span class="flex items-center gap-1 text-[11px]">
               <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-              <span class="text-blue-600 dark:text-blue-400 font-medium">{{ item.izin }}</span>
+              <span class="text-gray-600 dark:text-gray-400 font-medium">{{ item.izin }}</span>
               <span class="text-gray-400">Izin</span>
             </span>
             <span class="flex items-center gap-1 text-[11px]">
               <span class="w-2 h-2 rounded-full bg-red-500"></span>
-              <span class="text-red-600 dark:text-red-400 font-medium">{{ item.alpha }}</span>
+              <span class="text-gray-600 dark:text-gray-400 font-medium">{{ item.alpha }}</span>
               <span class="text-gray-400">Alpha</span>
             </span>
             <span class="ml-auto text-[11px] text-gray-400">{{ item.ruangan }}</span>

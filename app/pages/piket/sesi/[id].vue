@@ -47,6 +47,16 @@ const alasanLabels: Record<string, string> = {
   LAINNYA: 'Lainnya'
 }
 
+const sessionStatusLabels: Record<string, string> = {
+  SELESAI: 'Selesai',
+  DITUNGGU: 'Menunggu',
+  DIBATALKAN: 'Dibatalkan'
+}
+
+function fmtStatus(s: string) {
+  return sessionStatusLabels[s] || s.charAt(0) + s.slice(1).toLowerCase()
+}
+
 const route = useRoute()
 const sesiId = computed(() => parseInt(route.params.id as string))
 
@@ -113,7 +123,7 @@ watch(totalPages, () => { if (page.value > totalPages.value) page.value = totalP
   <PiketLayout>
     <!-- Back Button -->
     <div class="mb-4">
-      <NuxtLink to="/piket/riwayat" class="inline-flex items-center gap-1.5 text-xs text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 font-medium">
+      <NuxtLink to="/piket/riwayat" class="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
@@ -137,7 +147,7 @@ watch(totalPages, () => { if (page.value > totalPages.value) page.value = totalP
           <p class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ sesi.jadwal.mapel }}</p>
           <span class="inline-flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full" :class="sesi.status === 'SELESAI' ? 'bg-emerald-500' : 'bg-gray-400'"></span>
-            <span class="text-xs text-gray-500 dark:text-gray-400">{{ sesi.status }}</span>
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ fmtStatus(sesi.status) }}</span>
           </span>
         </div>
 
@@ -174,33 +184,23 @@ watch(totalPages, () => { if (page.value > totalPages.value) page.value = totalP
       </div>
 
       <!-- Guru Berhalangan Info -->
-      <div v-if="sesi.guruBerhalangan" class="bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800 px-4 py-3 mb-4">
-        <div class="flex items-center gap-2 mb-1.5">
-          <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-          </svg>
-          <p class="text-xs font-semibold text-amber-700 dark:text-amber-300">PTK Berhalangan</p>
-        </div>
-        <dl class="space-y-1 text-xs ml-6">
+      <div v-if="sesi.guruBerhalangan" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200/80 dark:border-slate-700/80 px-4 py-3 mb-4">
+        <p class="text-xs font-semibold text-gray-900 dark:text-gray-100 mb-1.5">PTK Berhalangan</p>
+        <dl class="space-y-1 text-xs">
           <div class="flex items-center gap-2">
-            <dt class="text-amber-600 dark:text-amber-400">Alasan:</dt>
-            <dd class="font-medium text-amber-800 dark:text-amber-200">{{ alasanLabels[sesi.guruBerhalangan.alasan] || sesi.guruBerhalangan.alasan }}</dd>
+            <dt class="text-gray-500 dark:text-gray-400">Alasan:</dt>
+            <dd class="font-medium text-gray-900 dark:text-gray-100">{{ alasanLabels[sesi.guruBerhalangan.alasan] || sesi.guruBerhalangan.alasan }}</dd>
           </div>
           <div v-if="sesi.guruBerhalangan.keterangan" class="flex items-center gap-2">
-            <dt class="text-amber-600 dark:text-amber-400">Keterangan:</dt>
-            <dd class="text-amber-800 dark:text-amber-200">{{ sesi.guruBerhalangan.keterangan }}</dd>
+            <dt class="text-gray-500 dark:text-gray-400">Keterangan:</dt>
+            <dd class="text-gray-900 dark:text-gray-100">{{ sesi.guruBerhalangan.keterangan }}</dd>
           </div>
         </dl>
       </div>
 
       <!-- Petugas Piket Info -->
-      <div v-if="sesi.petugasPiketNama" class="bg-primary-50 dark:bg-primary-900/20 rounded-xl border border-primary-200 dark:border-primary-800 px-4 py-3 mb-4">
-        <div class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-primary-600 dark:text-primary-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-          <p class="text-xs text-primary-700 dark:text-primary-300">Disetujui oleh: <span class="font-semibold">{{ sesi.petugasPiketNama }}</span></p>
-        </div>
+      <div v-if="sesi.petugasPiketNama" class="bg-white dark:bg-slate-800 rounded-lg border border-gray-200/80 dark:border-slate-700/80 px-4 py-3 mb-4">
+        <p class="text-xs text-gray-500 dark:text-gray-400">Disetujui oleh: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ sesi.petugasPiketNama }}</span></p>
       </div>
 
       <!-- Search & Filter -->
@@ -246,22 +246,15 @@ watch(totalPages, () => { if (page.value > totalPages.value) page.value = totalP
                 </td>
                 <td class="px-3 py-3 text-gray-500 dark:text-gray-400 hidden sm:table-cell">{{ s.nisn }}</td>
                 <td class="px-3 py-3 text-center">
-                  <span
-                    v-if="statusOf(s) === 'HADIR'"
-                    class="inline-flex items-center rounded-full bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 ring-1 ring-green-200 dark:ring-green-800 px-2.5 py-1 text-xs font-medium"
-                  >
+                  <span v-if="statusOf(s) === 'HADIR'" class="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
                     Hadir
                   </span>
-                  <span
-                    v-else-if="statusOf(s) === 'BELUM'"
-                    class="inline-flex items-center rounded-full border border-dashed border-gray-300 dark:border-slate-600 text-gray-400 dark:text-gray-500 px-2.5 py-1 text-xs font-medium"
-                  >
-                    Belum Absen
+                  <span v-else-if="statusOf(s) === 'BELUM'" class="inline-flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+                    <span class="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600"></span>
+                    Belum absen
                   </span>
-                  <span
-                    v-else
-                    class="inline-flex items-center gap-1.5 rounded-full bg-gray-50 dark:bg-slate-700/50 text-gray-600 dark:text-gray-300 ring-1 ring-gray-200 dark:ring-slate-600 px-2.5 py-1 text-xs font-medium"
-                  >
+                  <span v-else class="inline-flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
                     <span :class="['w-2 h-2 rounded-full', statusDotColor[statusOf(s)] || 'bg-gray-400']" />
                     {{ statusLabels[statusOf(s)] || statusOf(s) }}
                   </span>
