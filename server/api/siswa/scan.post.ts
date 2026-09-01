@@ -45,6 +45,44 @@ export default defineEventHandler(async (event) => {
   }
 
   const scannedAt = new Date()
+
+  // Ambil info sesi untuk data guru berhalangan
+  let sesiInfo: { mapel: string; kelas: string; jamMulai: string; jamSelesai: string; guru: string; isGuruBerhalangan: boolean; petugasPiketNama: string | null } | null = null
+  if (checkin.info) {
+    const today = todayDate()
+    const hari = hariIni(new Date()) as any
+    const jadwal = await prisma.jadwalPelajaran.findFirst({
+      where: {
+        kelas: { nama: checkin.info.kelas },
+        mapel: checkin.info.mapel,
+        hari
+      },
+      select: {
+        id: true,
+        mapel: true,
+        jamMulai: true,
+        jamSelesai: true,
+        kelas: { select: { nama: true } },
+        guru: { select: { nama: true } }
+      }
+    })
+    if (jadwal) {
+      const sesi = await prisma.sesiAbsensi.findFirst({
+        where: { jadwalId: jadwal.id, tanggal: today },
+        select: { isGuruBerhalangan: true, petugasPiketNama: true }
+      })
+      sesiInfo = {
+        mapel: checkin.info.mapel,
+        kelas: checkin.info.kelas,
+        jamMulai: checkin.info.jamMulai,
+        jamSelesai: checkin.info.jamSelesai,
+        guru: checkin.info.guru,
+        isGuruBerhalangan: sesi?.isGuruBerhalangan || false,
+        petugasPiketNama: sesi?.petugasPiketNama || null
+      }
+    }
+  }
+
   return {
     success: true,
     alreadyScanned: checkin.alreadyScanned,
@@ -54,14 +92,6 @@ export default defineEventHandler(async (event) => {
     status: 'PENDING',
     scannedAt: scannedAt.toISOString(),
     ruangan: { id: ruangan.id, nama: ruangan.nama },
-    sesi: checkin.info
-      ? {
-          mapel: checkin.info.mapel,
-          kelas: checkin.info.kelas,
-          jamMulai: checkin.info.jamMulai,
-          jamSelesai: checkin.info.jamSelesai,
-          guru: checkin.info.guru
-        }
-      : null
+    sesi: sesiInfo
   }
 })

@@ -16,7 +16,7 @@ const result = ref<{
   status?: string
   scannedAt?: string
   ruangan?: { id: number; nama: string }
-  sesi?: { id: number; mapel: string; kelas: string; jamMulai?: string; jamSelesai?: string; guru?: string }
+  sesi?: { id: number; mapel: string; kelas: string; jamMulai?: string; jamSelesai?: string; guru?: string; isGuruBerhalangan?: boolean; petugasPiketNama?: string | null }
 } | null>(null)
 const errorMsg = ref('')
 const submitting = ref(false)
@@ -502,6 +502,23 @@ const statusLabels: Record<string, string> = {
               <div v-if="result.sesi?.guru" class="flex justify-between items-center">
                 <span class="text-gray-500 dark:text-gray-400">PTK</span>
                 <span class="font-medium text-gray-900 dark:text-gray-100">{{ result.sesi.guru }}</span>
+              </div>
+              <div v-if="result.sesi?.isGuruBerhalangan" class="flex justify-between items-center">
+                <span class="text-gray-500 dark:text-gray-400">Keterangan</span>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  Guru Berhalangan
+                </span>
+              </div>
+              <div v-if="result.sesi?.isGuruBerhalangan && result.sesi?.petugasPiketNama" class="flex justify-between items-center">
+                <span class="text-gray-500 dark:text-gray-400">Petugas Piket</span>
+                <span class="font-medium text-amber-700 dark:text-amber-300">{{ result.sesi.petugasPiketNama }}</span>
+              </div>
+              <div v-if="result.sesi?.isGuruBerhalangan && !result.sesi?.petugasPiketNama" class="flex justify-between items-center">
+                <span class="text-gray-500 dark:text-gray-400">Petugas Piket</span>
+                <span class="text-xs text-amber-600 dark:text-amber-400 italic">Menunggu petugas piket</span>
               </div>
               <div v-if="result.status" class="flex justify-between items-center">
                 <span class="text-gray-500 dark:text-gray-400">Status</span>

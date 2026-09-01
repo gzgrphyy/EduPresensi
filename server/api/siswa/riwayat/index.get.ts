@@ -13,7 +13,9 @@ export default defineEventHandler(async (event) => {
     where: { siswaId: siswa.id },
     include: {
       sesi: {
-        include: {
+        select: {
+          isGuruBerhalangan: true,
+          petugasPiketNama: true,
           jadwal: {
             select: {
               id: true,
@@ -42,6 +44,8 @@ export default defineEventHandler(async (event) => {
     keterangan: r.keterangan,
     scannedAt: r.scannedAt,
     guru: r.sesi.jadwal.guru.nama,
-    rating: r.sesi.ratings[0] || null
+    rating: r.sesi.ratings[0] || null,
+    isGuruBerhalangan: r.sesi.isGuruBerhalangan,
+    petugasPiketNama: r.sesi.petugasPiketNama
   }))
 })

@@ -10,6 +10,8 @@ interface TodayStatus {
   ruangan?: string
   jamMulai?: string
   jamSelesai?: string
+  isGuruBerhalangan?: boolean
+  petugasPiketNama?: string | null
 }
 
 interface DashboardData {
@@ -24,6 +26,8 @@ interface DashboardData {
     status: string
     keterangan: string | null
     scannedAt: string
+    isGuruBerhalangan: boolean
+    petugasPiketNama: string | null
   }[]
 }
 
@@ -246,7 +250,9 @@ onMounted(() => {
               </svg>
             </div>
             <div class="flex-1">
-              <p class="text-sm font-medium text-amber-800 dark:text-amber-200">Menunggu konfirmasi guru</p>
+              <p class="text-sm font-medium text-amber-800 dark:text-amber-200">
+                {{ data.todayStatus.isGuruBerhalangan ? 'Guru berhalangan hadir' : 'Menunggu konfirmasi guru' }}
+              </p>
               <p v-if="data.todayStatus.scannedAt" class="text-xs text-amber-700/80 dark:text-amber-300/80">Absen pukul {{ formatJam(data.todayStatus.scannedAt) }}</p>
             </div>
             <button
@@ -262,6 +268,23 @@ onMounted(() => {
           <p class="text-sm text-amber-800 dark:text-amber-200">
             {{ data.todayStatus.mapel }} — {{ data.todayStatus.kelas }}{{ data.todayStatus.ruangan ? ` · ${data.todayStatus.ruangan}` : '' }} {{ data.todayStatus.jamMulai ? `(${data.todayStatus.jamMulai}-${data.todayStatus.jamSelesai})` : '' }}
           </p>
+          <!-- Info guru berhalangan -->
+          <div v-if="data.todayStatus.isGuruBerhalangan" class="mt-2.5 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <div>
+                <p class="text-xs font-medium text-amber-800 dark:text-amber-200">Guru pengajar berhalangan hadir</p>
+                <p v-if="data.todayStatus.petugasPiketNama" class="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                  Ditangani oleh: <span class="font-semibold">{{ data.todayStatus.petugasPiketNama }}</span> (Petugas Piket)
+                </p>
+                <p v-else class="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                  Menunggu petugas piket menangani sesi ini
+                </p>
+              </div>
+            </div>
+          </div>
         </template>
 
         <!-- ALPHA -->
@@ -489,8 +512,19 @@ onMounted(() => {
             class="flex items-center gap-3 px-5 py-3 active:bg-gray-50 dark:active:bg-slate-700/40 transition-colors"
           >
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ item.mapel }}</p>
+              <div class="flex items-center gap-2">
+                <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ item.mapel }}</p>
+                <span v-if="item.isGuruBerhalangan" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 flex-shrink-0">
+                  <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                  Berhalangan
+                </span>
+              </div>
               <p class="text-xs text-gray-500 dark:text-gray-400">{{ formatTanggal(item.tanggal) }} — {{ item.kelas }}</p>
+              <p v-if="item.isGuruBerhalangan && item.petugasPiketNama" class="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5">
+                Petugas Piket: {{ item.petugasPiketNama }}
+              </p>
             </div>
             <span class="inline-flex items-center gap-1.5 flex-shrink-0">
               <span class="w-2 h-2 rounded-full flex-shrink-0" :class="statusDotColor[item.status] || 'bg-gray-400'"></span>

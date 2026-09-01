@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { user } = useUserSession()
+const { user, clear } = useUserSession()
 const isGuruOrAdmin = computed(() => {
   return user.value && (user.value.role === 'ADMIN' || user.value.role === 'GURU' || user.value.role === 'PETUGAS_PIKET')
 })
@@ -27,6 +27,22 @@ const petugasNama = ref('')
 const loadingApprove = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+
+const confirmLogout = ref(false)
+
+async function handleLogout() {
+  confirmLogout.value = true
+}
+
+async function doLogout() {
+  try {
+    await clear()
+  } catch {}
+}
+
+async function cancelLogout() {
+  confirmLogout.value = false
+}
 
 // Modal state for student attendance details inside approval
 const studentEntries = ref<Record<number, { status: string; keterangan: string }>>({})
@@ -105,6 +121,15 @@ template
           <span class="text-xs font-semibold px-3 py-1 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full border border-amber-200 dark:border-amber-700">
             Piket Aktif: {{ user?.nama }}
           </span>
+          <button
+            @click="handleLogout"
+            class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+            title="Keluar"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
         </div>
       </div>
     </header>
@@ -346,6 +371,28 @@ template
             {{ loadingApprove ? 'Menyimpan...' : 'Konfirmasi Approve' }}
           </button>
         </footer>
+      </div>
+    </div>
+
+    <!-- Modal Konfirmasi Logout -->
+    <div v-if="confirmLogout" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" @click.self="cancelLogout">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-200 dark:border-slate-700 p-6 w-full max-w-sm">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Keluar?</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Yakin ingin keluar dari akun ini?</p>
+        <div class="flex justify-end gap-3">
+          <button
+            @click="cancelLogout"
+            class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            @click="doLogout"
+            class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors"
+          >
+            Keluar
+          </button>
+        </div>
       </div>
     </div>
   </div>

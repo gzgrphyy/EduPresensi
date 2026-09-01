@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, statusMessage: 'Anda bukan wali kelas untuk kelas ini' })
   }
 
-  const tanggalDate = new Date(tanggalStr + 'T00:00:00')
+  const tanggalDate = new Date(tanggalStr + 'T00:00:00Z')
   const count = await prisma.sesiAbsensi.count({
     where: { tanggal: tanggalDate, jadwal: { kelasId } }
   })

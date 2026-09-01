@@ -23,7 +23,9 @@ export default defineEventHandler(async (event) => {
       where: { siswaId: siswa.id, sesi: { tanggal: today } },
       include: {
         sesi: {
-          include: {
+          select: {
+            isGuruBerhalangan: true,
+            petugasPiketNama: true,
             jadwal: {
               include: {
                 ruangan: { select: { id: true, nama: true } },
@@ -68,7 +70,9 @@ export default defineEventHandler(async (event) => {
       where: { siswaId: siswa.id },
       include: {
         sesi: {
-          include: {
+          select: {
+            isGuruBerhalangan: true,
+            petugasPiketNama: true,
             jadwal: {
               select: {
                 mapel: true,
@@ -95,6 +99,8 @@ export default defineEventHandler(async (event) => {
     ruangan?: string
     jamMulai?: string
     jamSelesai?: string
+    isGuruBerhalangan?: boolean
+    petugasPiketNama?: string | null
   }
 
   if (todayRequests.length > 0) {
@@ -114,7 +120,9 @@ export default defineEventHandler(async (event) => {
       kelas: latest.sesi.jadwal.kelas.nama,
       ruangan: latest.sesi.jadwal.ruangan.nama,
       jamMulai: latest.sesi.jadwal.jamMulai,
-      jamSelesai: latest.sesi.jadwal.jamSelesai
+      jamSelesai: latest.sesi.jadwal.jamSelesai,
+      isGuruBerhalangan: latest.sesi.isGuruBerhalangan,
+      petugasPiketNama: latest.sesi.petugasPiketNama
     }
   } else {
     todayStatus = {
@@ -143,7 +151,9 @@ export default defineEventHandler(async (event) => {
       kelas: h.sesi.jadwal.kelas.nama,
       status: h.status,
       keterangan: h.keterangan,
-      scannedAt: h.scannedAt
+      scannedAt: h.scannedAt,
+      isGuruBerhalangan: h.sesi.isGuruBerhalangan,
+      petugasPiketNama: h.sesi.petugasPiketNama
     }))
   }
 })

@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
   const today = todayDate()
   // enforce each tanggal in array – currently we allow any date (including future)
   for (const t of tanggal) {
-    const tanggalDate = new Date(t + 'T00:00:00')
+    const tanggalDate = new Date(t + 'T00:00:00Z')
     // Commented out future‑date restriction; remove if you want to forbid future dates
     // if (tanggalDate.getTime() > today.getTime()) {
     //   throw createError({ statusCode: 400, statusMessage: `Tidak dapat mengatur kehadiran untuk tanggal ${t} yang akan datang` })
@@ -74,7 +74,7 @@ export default defineEventHandler(async (event) => {
   // ---------------------------------------------------
   // 1. Detect today & collect student IDs that are marked SA... today
   // ---------------------------------------------------
-  const isToday = tanggal.some(t => new Date(t + 'T00:00:00').getTime() === todayDate().getTime())
+  const isToday = tanggal.some(t => new Date(t + 'T00:00:00Z').getTime() === todayDate().getTime())
   const sickStudentIds = new Set<number>()
   if (isToday) {
     for (const e of entries) {
@@ -92,7 +92,7 @@ export default defineEventHandler(async (event) => {
   await prisma.$transaction(async (tx) => {
     // Loop each selected date
     for (const t of tanggal) {
-      const tanggalDate = new Date(t + 'T00:00:00')
+      const tanggalDate = new Date(t + 'T00:00:00Z')
       const sesiList: { id: number }[] = []
       for (const j of jadwalIds) {
         const sesi = await tx.sesiAbsensi.upsert({
@@ -108,7 +108,7 @@ export default defineEventHandler(async (event) => {
       for (const sesi of sesiList) {
         for (const e of entries) {
           const keteranganFinal = (e.keterangan?.trim() || catatanTrim) || null
-          const finalStatus = (new Date(t + 'T00:00:00').getTime() === todayDate().getTime() && sickStudentIds.has(e.siswaId))
+          const finalStatus = (new Date(t + 'T00:00:00Z').getTime() === todayDate().getTime() && sickStudentIds.has(e.siswaId))
             ? 'SAKIT'
             : e.status
           await tx.absensiRequest.upsert({

@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const { tanggal, alasan, keterangan, excludedJadwalIds = [] } = result.data
-  const dateObj = new Date(tanggal)
+  const dateObj = new Date(tanggal + 'T00:00:00Z')
 
   // Tentukan hari dalam uppercase
   const daysMap = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU']

@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const kelasId = query.kelasId ? parseInt(query.kelasId as string) : undefined
   const mapel = (query.mapel as string) || undefined
 
-  const dateObj = new Date(tanggal + 'T00:00:00')
+  const dateObj = new Date(tanggal + 'T00:00:00Z')
 
   const whereClause: any = {
     tanggal: dateObj,
