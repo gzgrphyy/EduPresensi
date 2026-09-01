@@ -60,8 +60,7 @@ const siswaMenus = computed<MenuItem[]>(() => [
 ])
 
 const petugasPiketMenus = computed<MenuItem[]>(() => [
-  { label: t('nav.beranda'), to: '/piket', icon: 'dashboard' },
-  { label: t('nav.profil'), to: '/piket', icon: 'profile' },
+  { label: t('nav.beranda'), to: '/piket/dashboard', icon: 'dashboard' },
 ])
 
 const currentMenus = computed(() => {

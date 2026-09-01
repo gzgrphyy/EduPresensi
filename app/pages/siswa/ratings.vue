@@ -63,7 +63,10 @@ const bulanOptions = [
 const tahunOptions = computed(() => {
   const years = new Set<string>()
   for (const s of data.value?.sessions || []) {
-    if (s.tanggal) years.add(new Date(s.tanggal).getFullYear().toString())
+    if (s.tanggal) {
+      const d = new Date(s.tanggal)
+      if (!isNaN(d.getTime())) years.add(d.getFullYear().toString())
+    }
   }
   if (!years.size) years.add(new Date().getFullYear().toString())
   return [
@@ -79,18 +82,19 @@ const filteredSessions = computed(() => {
     if (filterMapel.value && s.mapel !== filterMapel.value) return false
     if (filterBulan.value) {
       const d = new Date(s.tanggal)
-      if ((d.getMonth() + 1).toString() !== filterBulan.value) return false
+      if (isNaN(d.getTime()) || (d.getMonth() + 1).toString() !== filterBulan.value) return false
     }
     if (filterTahun.value) {
       const d = new Date(s.tanggal)
-      if (d.getFullYear().toString() !== filterTahun.value) return false
+      if (isNaN(d.getTime()) || d.getFullYear().toString() !== filterTahun.value) return false
     }
     if (!q) return true
+    const tanggal = (() => { const d = new Date(s.tanggal); return isNaN(d.getTime()) ? '' : d.toLocaleDateString('id-ID').toLowerCase() })()
     return (
       s.mapel.toLowerCase().includes(q) ||
       s.kelas.toLowerCase().includes(q) ||
       s.guru.toLowerCase().includes(q) ||
-      new Date(s.tanggal).toLocaleDateString('id-ID').toLowerCase().includes(q)
+      tanggal.includes(q)
     )
   })
 })
@@ -120,7 +124,9 @@ const visible = computed(() => {
 watch([searchQuery, filterMapel, filterBulan, filterTahun], () => { page.value = 1 })
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return '-'
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 // Rating modal

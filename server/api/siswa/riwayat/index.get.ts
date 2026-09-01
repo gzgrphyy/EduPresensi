@@ -14,6 +14,7 @@ export default defineEventHandler(async (event) => {
     include: {
       sesi: {
         select: {
+          tanggal: true,
           isGuruBerhalangan: true,
           petugasPiketNama: true,
           jadwal: {
@@ -37,7 +38,7 @@ export default defineEventHandler(async (event) => {
   return requests.map(r => ({
     id: r.id,
     sesiId: r.sesiId,
-    tanggal: r.sesi.tanggal,
+    tanggal: r.sesi.tanggal.toISOString(),
     mapel: r.sesi.jadwal.mapel,
     kelas: r.sesi.jadwal.kelas.nama,
     status: r.status,

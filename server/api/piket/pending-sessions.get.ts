@@ -15,12 +15,8 @@ export default defineEventHandler(async (event) => {
 
   const whereClause: any = {
     tanggal: dateObj,
-    // Sesi yang belum di-approve oleh guru utama (atau berstatus AKTIF / belum final)
-    // Atau sesi yang di-set berhalangan
-    OR: [
-      { isGuruBerhalangan: true },
-      { approvedByRole: null }
-    ]
+    // Hanya sesi di mana guru sudah konfirmasi berhalangan (sakit/izin/dinas/lainnya)
+    isGuruBerhalangan: true
   }
 
   if (kelasId) {
@@ -58,16 +54,9 @@ export default defineEventHandler(async (event) => {
     ]
   })
 
-  // Kategorisasi sesuai plan:
-  // 1. "Dikonfirmasi Berhalangan" (Skenario A: isGuruBerhalangan = true)
-  // 2. "Menunggu Laporan" (Skenario B: isGuruBerhalangan = false / PENDING biasa)
-  const dikonfirmasiBerhalangan = sessions.filter(s => s.isGuruBerhalangan)
-  const menungguLaporan = sessions.filter(s => !s.isGuruBerhalangan)
-
   return {
     tanggal,
-    dikonfirmasiBerhalangan,
-    menungguLaporan,
+    dikonfirmasiBerhalangan: sessions,
     total: sessions.length
   }
 })

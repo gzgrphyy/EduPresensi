@@ -771,7 +771,7 @@ const rataPersentase = computed(() => {
             <tbody class="divide-y admin-accent-divide">
               <tr v-for="sesi in filteredDetailSesi" :key="sesi.id" class="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors">
                 <td class="px-3 py-2.5 text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                  <span class="font-medium text-gray-900 dark:text-gray-100">{{ new Date(sesi.tanggal).toLocaleDateString('id-ID') }}</span>
+                  <span class="font-medium text-gray-900 dark:text-gray-100">{{ (() => { const d = new Date(sesi.tanggal); return isNaN(d.getTime()) ? '-' : d.toLocaleDateString('id-ID') })() }}</span>
                   <span class="block text-[11px] text-gray-500 dark:text-gray-400">{{ sesi.jamMulai }} - {{ sesi.jamSelesai }}</span>
                 </td>
                 <td class="px-3 py-2.5">

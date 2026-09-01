@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
 
   const sessions = requests.map(r => ({
     sesiId: r.sesiId,
-    tanggal: r.sesi.tanggal,
+    tanggal: r.sesi.tanggal.toISOString(),
     mapel: r.sesi.jadwal.mapel,
     kelas: r.sesi.jadwal.kelas.nama,
     guru: r.sesi.jadwal.guru.nama,

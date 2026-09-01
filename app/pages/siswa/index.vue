@@ -137,7 +137,9 @@ function formatJam(iso: string) {
 }
 
 function formatTanggal(iso: string) {
-  return new Date(iso).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return '-'
+  return d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })
 }
 
 const errorMessage = computed(() => {

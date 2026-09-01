@@ -350,7 +350,7 @@ async function cancelBerhalangan(id: number) {
       >
         <div>
           <p class="font-bold text-amber-900 dark:text-amber-200">
-            Tidak Masuk: {{ new Date(item.tanggal).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) }} — {{ item.alasan }}
+            Tidak Masuk: {{ (() => { const d = new Date(item.tanggal); return isNaN(d.getTime()) ? '-' : d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) })() }} — {{ item.alasan }}
           </p>
           <p v-if="item.keterangan" class="text-amber-700 dark:text-amber-300 mt-0.5">{{ item.keterangan }}</p>
         </div>

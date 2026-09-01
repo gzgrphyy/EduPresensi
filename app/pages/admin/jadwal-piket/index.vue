@@ -106,17 +106,19 @@ async function handleSave() {
   errorMsg.value = ''
   successMsg.value = ''
 
-  if (!form.value.petugasPiketId) { showError('Petugas piket wajib dipilih'); saving.value = false; return }
+  if (!editingItem.value && !form.value.petugasPiketId) { showError('Petugas piket wajib dipilih'); saving.value = false; return }
   if (!form.value.hari) { showError('Hari wajib dipilih'); saving.value = false; return }
   if (!form.value.jamMulai || !form.value.jamSelesai) { showError('Jam mulai dan selesai wajib diisi'); saving.value = false; return }
   if (form.value.jamMulai >= form.value.jamSelesai) { showError('Jam mulai harus sebelum jam selesai'); saving.value = false; return }
 
   try {
-    const body = {
-      petugasPiketId: parseInt(form.value.petugasPiketId),
+    const body: Record<string, any> = {
       hari: form.value.hari,
       jamMulai: form.value.jamMulai,
       jamSelesai: form.value.jamSelesai
+    }
+    if (!editingItem.value) {
+      body.petugasPiketId = parseInt(form.value.petugasPiketId)
     }
 
     if (editingItem.value) {
@@ -396,7 +398,7 @@ function pageNumbers(): (number | '...')[] {
             </div>
 
             <form @submit.prevent="handleSave" class="p-4 space-y-4">
-              <div>
+              <div v-if="!editingItem">
                 <label class="block text-xs text-gray-700 dark:text-gray-300 mb-1.5">
                   {{ t('admin.jadwalPiket.labelPetugasPiket') }} <span class="text-red-500">*</span>
                 </label>
@@ -411,6 +413,14 @@ function pageNumbers(): (number | '...')[] {
                     Tidak ada PTK tersedia
                   </option>
                 </select>
+              </div>
+
+              <div v-if="editingItem">
+                <label class="block text-xs text-gray-700 dark:text-gray-300 mb-1.5">Petugas Piket</label>
+                <div class="w-full px-3.5 py-2.5 border border-gray-200 dark:border-slate-600 rounded-lg text-xs bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-gray-400">
+                  {{ editingItem.petugasPiket.nama }}{{ editingItem.petugasPiket.nip ? ` (${editingItem.petugasPiket.nip})` : '' }}
+                </div>
+                <p class="text-[10px] text-gray-400 dark:text-gray-500 mt-1">Untuk mengganti petugas piket, hapus jadwal ini lalu buat baru.</p>
               </div>
 
               <div>

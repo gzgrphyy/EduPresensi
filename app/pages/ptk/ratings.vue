@@ -34,6 +34,18 @@ interface SessionRating {
 
 const { data: sessions, pending, error } = useFetch<SessionRating[]>('/api/absensi/ratings', { immediate: true })
 
+function fmtDate(iso: string) {
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return '-'
+  return d.toLocaleDateString('id-ID')
+}
+
+function fmtDateLong(iso: string) {
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return '-'
+  return d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 const searchQuery = ref('')
 const filterMapel = ref('')
 const filterBulan = ref('')
@@ -71,7 +83,10 @@ const bulanOptions = [
 const tahunOptions = computed(() => {
   const years = new Set<string>()
   for (const s of sessions.value || []) {
-    if (s.tanggal) years.add(new Date(s.tanggal).getFullYear().toString())
+    if (s.tanggal) {
+      const d = new Date(s.tanggal)
+      if (!isNaN(d.getTime())) years.add(d.getFullYear().toString())
+    }
   }
   if (!years.size) years.add(new Date().getFullYear().toString())
   return [
@@ -87,17 +102,18 @@ const filteredSessions = computed(() => {
     if (filterMapel.value && s.mapel !== filterMapel.value) return false
     if (filterBulan.value) {
       const d = new Date(s.tanggal)
-      if ((d.getMonth() + 1).toString() !== filterBulan.value) return false
+      if (isNaN(d.getTime()) || (d.getMonth() + 1).toString() !== filterBulan.value) return false
     }
     if (filterTahun.value) {
       const d = new Date(s.tanggal)
-      if (d.getFullYear().toString() !== filterTahun.value) return false
+      if (isNaN(d.getTime()) || d.getFullYear().toString() !== filterTahun.value) return false
     }
     if (!q) return true
+    const tanggal = (() => { const d = new Date(s.tanggal); return isNaN(d.getTime()) ? '' : d.toLocaleDateString('id-ID').toLowerCase() })()
     return (
       s.mapel.toLowerCase().includes(q) ||
       s.kelas.toLowerCase().includes(q) ||
-      new Date(s.tanggal).toLocaleDateString('id-ID').toLowerCase().includes(q)
+      tanggal.includes(q)
     )
   })
 })
@@ -250,7 +266,7 @@ function closeModal() {
                 class="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer"
               >
                 <td class="px-4 py-3 text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                  {{ new Date(s.tanggal).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) }}
+                  {{ fmtDateLong(s.tanggal) }}
                 </td>
                 <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">{{ s.mapel }}</td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">{{ s.kelas }}</td>

@@ -41,7 +41,10 @@ const exportTahun = ref<number | ''>(new Date().getFullYear())
 
 const tahunOptions = computed(() => {
   const years = new Set<number>()
-  for (const r of displayData.value) years.add(new Date(r.tanggal).getFullYear())
+  for (const r of displayData.value) {
+    const d = new Date(r.tanggal)
+    if (!isNaN(d.getTime())) years.add(d.getFullYear())
+  }
   if (years.size === 0) years.add(new Date().getFullYear())
   return [...years].sort((a, b) => b - a)
 })
@@ -121,7 +124,7 @@ async function downloadExport() {
           </thead>
           <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
             <tr v-for="item in displayData" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors">
-              <td class="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ new Date(item.tanggal).toLocaleDateString('id-ID') }}</td>
+              <td class="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ (() => { const d = new Date(item.tanggal); return isNaN(d.getTime()) ? '-' : d.toLocaleDateString('id-ID') })() }}</td>
               <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100 truncate max-w-[10rem]">{{ item.mapel }}</td>
               <td class="px-4 py-3 text-gray-600 dark:text-gray-300 truncate max-w-[6rem]">{{ item.kelas }}</td>
               <td class="px-4 py-3 text-center font-semibold" :class="persentaseColor(item.persentase)">{{ item.persentase }}%</td>

@@ -21,6 +21,30 @@ interface RiwayatItem {
   petugasPiketNama: string | null
 }
 
+function fmtDate(iso: string) {
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return '-'
+  return d.toLocaleDateString('id-ID')
+}
+
+function fmtDateSearch(iso: string) {
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('id-ID').toLowerCase()
+}
+
+function fmtYear(iso: string) {
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return 0
+  return d.getFullYear()
+}
+
+function fmtTime(iso: string) {
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return '-'
+  return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+}
+
 const { data: riwayat, pending, refresh } = useFetch<RiwayatItem[]>('/api/siswa/riwayat', { immediate: true })
 
 const searchQuery = ref('')
@@ -36,7 +60,7 @@ const filteredData = computed(() => {
   return rows.filter(r => {
     if (filterStatus.value && r.status !== filterStatus.value) return false
     if (!q) return true
-    const tanggal = new Date(r.tanggal).toLocaleDateString('id-ID').toLowerCase()
+    const tanggal = fmtDateSearch(r.tanggal)
     const status = (statusLabels[r.status] || r.status).toLowerCase()
     return r.mapel.toLowerCase().includes(q) || r.kelas.toLowerCase().includes(q) || status.includes(q) || tanggal.includes(q)
   })
@@ -57,7 +81,7 @@ const exportTahun = ref<number | ''>(new Date().getFullYear())
 
 const tahunOptions = computed(() => {
   const years = new Set<number>()
-  for (const r of riwayat.value || []) years.add(new Date(r.tanggal).getFullYear())
+  for (const r of riwayat.value || []) { const y = fmtYear(r.tanggal); if (y) years.add(y) }
   if (years.size === 0) years.add(new Date().getFullYear())
   return [...years].sort((a, b) => b - a)
 })
@@ -148,7 +172,7 @@ async function downloadExport() {
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
               <tr v-for="item in visibleData" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors">
-                <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ new Date(item.tanggal).toLocaleDateString('id-ID') }}</td>
+                <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ fmtDate(item.tanggal) }}</td>
                 <td class="px-4 py-3">
                   <div class="font-medium text-gray-900 dark:text-gray-100">{{ item.mapel }}</div>
                   <div v-if="item.isGuruBerhalangan" class="flex items-center gap-1 mt-0.5">
@@ -165,7 +189,7 @@ async function downloadExport() {
                 </td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ item.kelas }}</td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                  {{ item.scannedAt ? new Date(item.scannedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-' }}
+                  {{ item.scannedAt ? fmtTime(item.scannedAt) : '-' }}
                 </td>
                 <td class="px-4 py-3 text-center">
                   <span class="inline-flex items-center gap-1.5">

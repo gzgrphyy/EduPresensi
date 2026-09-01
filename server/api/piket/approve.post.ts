@@ -123,11 +123,11 @@ export default defineEventHandler(async (event) => {
         }
       }
     } else {
-      // Default: finalize pending or un-scanned students as HADIR / ALPHA
+      // Default: finalize scanned students as HADIR, missing students as ALPHA
       const requestedIds = new Set(sesi.requests.map(r => r.siswaId))
       const missingIds = siswaIds.filter(id => !requestedIds.has(id))
 
-      // Update PENDING requests to HADIR
+      // Update PENDING requests to HADIR (sudah scan, belum final)
       const pendingReqIds = sesi.requests.filter(r => r.status === 'PENDING').map(r => r.id)
       if (pendingReqIds.length > 0) {
         await tx.absensiRequest.updateMany({
@@ -140,12 +140,12 @@ export default defineEventHandler(async (event) => {
         })
       }
 
-      // Create missing as HADIR (or ALPHA)
+      // Create missing students as ALPHA (belum scan sama sekali)
       if (missingIds.length > 0) {
         const toCreate = missingIds.map(siswaId => ({
           sesiId,
           siswaId,
-          status: 'HADIR' as const,
+          status: 'ALPHA' as const,
           scannedAt: now,
           approvedByRole: 'GURU_PIKET' as const,
           approvedAt: now
