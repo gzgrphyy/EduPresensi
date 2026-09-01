@@ -623,7 +623,6 @@ async function copyPassword() {
                 <th class="text-center px-4 sm:px-6 py-3.5  text-gray-600 dark:text-gray-300 text-xs tracking-wider hidden md:table-cell">{{ t('admin.guru.colNip') }}</th>
                 <th class="text-center px-4 sm:px-6 py-3.5  text-gray-600 dark:text-gray-300 text-xs tracking-wider hidden lg:table-cell">{{ t('admin.guru.colNoHp') }}</th>
                 <th class="text-left px-4 sm:px-6 py-3.5  text-gray-600 dark:text-gray-300 text-xs tracking-wider hidden sm:table-cell">{{ t('admin.guru.colEmail') }}</th>
-                <th class="text-center px-4 sm:px-6 py-3.5  text-gray-600 dark:text-gray-300 text-xs tracking-wider hidden md:table-cell">Role</th>
                 <th class="text-center px-4 sm:px-6 py-3.5  text-gray-600 dark:text-gray-300 text-xs tracking-wider">{{ t('admin.tahunAjaran.colStatus') }}</th>
                 <th class="text-center px-4 sm:px-6 py-3.5  text-gray-600 dark:text-gray-300 text-xs tracking-wider">{{ t('admin.tahunAjaran.colAksi') }}</th>
               </tr>
@@ -668,15 +667,6 @@ async function copyPassword() {
                   <span class="text-gray-600 dark:text-gray-300" :class="{ 'text-gray-400 dark:text-gray-500': !item.isActive }">
                     {{ item.email || '-' }}
                   </span>
-                </td>
-                <td class="px-4 sm:px-6 py-4 text-center hidden md:table-cell">
-                  <span v-if="item.role === 'PETUGAS_PIKET'" class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">
-                    {{ t('role.petugasPiket') }}
-                  </span>
-                  <span v-else-if="item.jenis === 'PTK'" class="text-gray-600 dark:text-gray-300 text-xs">
-                    {{ t('role.guru') }}
-                  </span>
-                  <span v-else class="text-gray-400 dark:text-gray-500 text-xs">-</span>
                 </td>
                 <td class="px-4 sm:px-6 py-4 text-center">
                   <span class="inline-flex items-center gap-1.5">

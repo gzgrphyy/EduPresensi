@@ -42,7 +42,7 @@ function aksiLabel(aksi: string) {
       <template #actions>
         <div class="flex items-center gap-3 text-xs text-gray-500 self-end pb-0.5">
           <div class="flex items-center gap-1">
-            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
             {{ t('admin.beranda.langsung') }}
           </div>
         </div>

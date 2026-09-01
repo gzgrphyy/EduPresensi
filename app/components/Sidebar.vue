@@ -28,12 +28,12 @@ const adminMenus = computed<MenuItem[]>(() => [
     label: t('nav.dataMaster'), icon: 'master-data',
     children: [
       { label: t('nav.dataPtk'), to: '/admin/guru' },
-      { label: t('nav.jadwalPiket'), to: '/admin/jadwal-piket' },
       { label: t('nav.dataMurid'), to: '/admin/siswa' },
       { label: t('nav.dataKelas'), to: '/admin/kelas' },
       { label: t('nav.tahunAjaran'), to: '/admin/tahun-ajaran' },
       { label: t('nav.dataRuangan'), to: '/admin/ruangan' },
       { label: t('nav.jadwalPelajaran'), to: '/admin/jadwal-pelajaran' },
+      { label: t('nav.jadwalPiket'), to: '/admin/jadwal-piket' },
     ]
   },
   { label: t('nav.pemantauanRuangan'), to: '/admin/monitoring', icon: 'monitor' },

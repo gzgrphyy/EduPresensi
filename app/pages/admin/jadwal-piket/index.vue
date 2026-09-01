@@ -287,12 +287,12 @@ function pageNumbers(): (number | '...')[] {
                 </div>
               </td>
               <td class="px-4 sm:px-6 py-4 text-center">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">
+                <span class="text-xs text-gray-600 dark:text-gray-300">
                   {{ hariLabel(item.hari) }}
                 </span>
               </td>
               <td class="px-4 sm:px-6 py-4 text-center">
-                <span class="text-gray-600 dark:text-gray-300 font-mono text-[11px]">
+                <span class="text-xs text-gray-600 dark:text-gray-300">
                   {{ item.jamMulai }} – {{ item.jamSelesai }}
                 </span>
               </td>
