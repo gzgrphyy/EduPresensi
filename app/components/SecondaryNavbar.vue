@@ -12,7 +12,8 @@ const activeMenu = computed(() => {
     path.startsWith('/admin/kelas') ||
     path.startsWith('/admin/tahun-ajaran') ||
     path.startsWith('/admin/ruangan') ||
-    path.startsWith('/admin/jadwal-pelajaran')
+    path.startsWith('/admin/jadwal-pelajaran') ||
+    path.startsWith('/admin/jadwal-piket')
   ) return 'dataMaster'
   if (path.startsWith('/admin/monitoring')) return 'pemantauan'
   if (path.startsWith('/admin/rekap') || path.startsWith('/admin/export')) return 'laporan'
@@ -28,6 +29,7 @@ interface SubMenuItem {
 const subMenus: Record<string, SubMenuItem[]> = {
   dataMaster: [
     { labelKey: 'nav.dataPtk',          to: '/admin/guru' },
+    { labelKey: 'nav.jadwalPiket',      to: '/admin/jadwal-piket' },
     { labelKey: 'nav.dataMurid',         to: '/admin/siswa' },
     { labelKey: 'nav.dataKelas',         to: '/admin/kelas' },
     { labelKey: 'nav.tahunAjaran',       to: '/admin/tahun-ajaran' },

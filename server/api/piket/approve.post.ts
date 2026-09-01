@@ -14,9 +14,34 @@ const bodySchema = z.object({
 
 export default defineEventHandler(async (event) => {
   const user = (await getUserSession(event)).user
-  const isPiketOrAdmin = user && (user.role === 'ADMIN' || user.email?.toLowerCase().includes('piket') || user.nama?.toLowerCase().includes('piket'))
-  if (!isPiketOrAdmin) {
-    throw createError({ statusCode: 403, statusMessage: 'Akses khusus Akun / Petugas Piket atau Admin' })
+  const isGuruOrAdmin = user && (user.role === 'ADMIN' || user.role === 'GURU' || user.role === 'PETUGAS_PIKET')
+  if (!isGuruOrAdmin) {
+    throw createError({ statusCode: 403, statusMessage: 'Akses khusus Guru Piket atau Admin' })
+  }
+
+  // Cek jadwal piket untuk guru/petugas piket (bukan admin)
+  if (user.role === 'GURU' || user.role === 'PETUGAS_PIKET') {
+    const now = new Date()
+    const dayNames = ['MINGGU', 'SENIN', 'SELASA', 'RABU', 'KAMIS', 'JUMAT', 'SABTU']
+    const currentDay = dayNames[now.getDay()]
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+
+    const jadwal = await prisma.jadwalPiket.findFirst({
+      where: {
+        petugasPiketId: user.id,
+        hari: currentDay,
+        isActive: true,
+        jamMulai: { lte: currentTime },
+        jamSelesai: { gt: currentTime }
+      }
+    })
+
+    if (!jadwal) {
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'Anda tidak sedang dalam jadwal piket. Hanya guru yang sedang bertugas piket yang dapat melakukan approve.'
+      })
+    }
   }
 
   const result = bodySchema.safeParse(await readBody(event))

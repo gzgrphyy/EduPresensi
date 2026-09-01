@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const existing = await prisma.user.findFirst({
-    where: { id, role: 'GURU' }
+    where: { id, role: { in: ['GURU', 'PETUGAS_PIKET'] } }
   })
   if (!existing) throw createError({ statusCode: 404, statusMessage: 'Guru tidak ditemukan' })
 

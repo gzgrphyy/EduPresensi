@@ -11,7 +11,8 @@ const openGroups = ref<Record<string, boolean>>({})
 const roleLabel = computed<Record<string, string>>(() => ({
   ADMIN: t('role.admin'),
   GURU: t('role.guru'),
-  SISWA: t('role.siswa')
+  SISWA: t('role.siswa'),
+  PETUGAS_PIKET: t('role.petugasPiket')
 }))
 
 interface MenuItem {
@@ -27,6 +28,7 @@ const adminMenus = computed<MenuItem[]>(() => [
     label: t('nav.dataMaster'), icon: 'master-data',
     children: [
       { label: t('nav.dataPtk'), to: '/admin/guru' },
+      { label: t('nav.jadwalPiket'), to: '/admin/jadwal-piket' },
       { label: t('nav.dataMurid'), to: '/admin/siswa' },
       { label: t('nav.dataKelas'), to: '/admin/kelas' },
       { label: t('nav.tahunAjaran'), to: '/admin/tahun-ajaran' },
@@ -57,6 +59,20 @@ const siswaMenus = computed<MenuItem[]>(() => [
   { label: t('nav.profil'), to: '/siswa/profil', icon: 'profile' },
 ])
 
+const petugasPiketMenus = computed<MenuItem[]>(() => [
+  { label: t('nav.beranda'), to: '/piket', icon: 'dashboard' },
+  { label: t('nav.profil'), to: '/piket', icon: 'profile' },
+])
+
+const currentMenus = computed(() => {
+  const role = user.value?.role
+  if (role === 'ADMIN') return adminMenus.value
+  if (role === 'GURU') return guruMenus.value
+  if (role === 'SISWA') return siswaMenus.value
+  if (role === 'PETUGAS_PIKET') return petugasPiketMenus.value
+  return []
+})
+
 const isActive = (to?: string) => {
   if (!to) return false
   return route.path === to
@@ -66,14 +82,6 @@ const isChildActive = (children?: { to: string }[]) => {
   if (!children) return false
   return children.some(c => route.path === c.to || route.path.startsWith(c.to + '/'))
 }
-
-const currentMenus = computed(() => {
-  const role = user.value?.role
-  if (role === 'ADMIN') return adminMenus.value
-  if (role === 'GURU') return guruMenus.value
-  if (role === 'SISWA') return siswaMenus.value
-  return []
-})
 
 function toggleGroup(key: string) {
   openGroups.value[key] = !openGroups.value[key]

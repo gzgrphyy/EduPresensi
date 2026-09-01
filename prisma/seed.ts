@@ -164,7 +164,7 @@ async function main() {
 
   await prisma.user.create({
     data: {
-      nama: 'Petugas Piket Ruang Piket',
+      nama: 'Guru Piket Ruang Piket',
       email: 'piket@absensi.test',
       passwordHash: hashPassword('Piket123'),
       role: 'GURU'
@@ -443,6 +443,34 @@ async function main() {
   })
 
   console.log('✓ Pengaturan default dibuat')
+
+  // ============================================
+  // JADWAL PIKET
+  // ============================================
+  const petugasPiket = await prisma.user.findFirst({
+    where: { email: 'piket@absensi.test' }
+  })
+
+  if (petugasPiket) {
+    const jadwalPiketData = [
+      { hari: 'SENIN' as const, jamMulai: '07:00', jamSelesai: '15:00' },
+      { hari: 'RABU' as const, jamMulai: '07:00', jamSelesai: '15:00' },
+      { hari: 'JUMAT' as const, jamMulai: '07:00', jamSelesai: '12:00' },
+    ]
+
+    for (const jp of jadwalPiketData) {
+      await prisma.jadwalPiket.create({
+        data: {
+          petugasPiketId: petugasPiket.id,
+          hari: jp.hari,
+          jamMulai: jp.jamMulai,
+          jamSelesai: jp.jamSelesai,
+          isActive: true
+        }
+      })
+    }
+    console.log('✓ Jadwal piket dibuat')
+  }
 
   // ============================================
   // JADWAL PELAJARAN (lengkap Senin–Jumat per kelas)

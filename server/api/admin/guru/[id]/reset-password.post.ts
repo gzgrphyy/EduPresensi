@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
   if (isNaN(id)) throw createError({ statusCode: 400, statusMessage: 'ID tidak valid' })
 
   const existing = await prisma.user.findFirst({
-    where: { id, role: 'GURU' }
+    where: { id, role: { in: ['GURU', 'PETUGAS_PIKET'] } }
   })
   if (!existing) throw createError({ statusCode: 404, statusMessage: 'Guru tidak ditemukan' })
 

@@ -44,6 +44,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
   }
 
+  if (path.startsWith('/api/piket/') && session.user.role !== 'ADMIN' && session.user.role !== 'GURU' && session.user.role !== 'PETUGAS_PIKET') {
+    throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+  }
+
   if (path.startsWith('/api/absensi/') && session.user.role !== 'GURU') {
     throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
   }

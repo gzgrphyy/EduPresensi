@@ -1,15 +1,11 @@
 <script setup lang="ts">
-definePageMeta({
-  middleware: ['auth']
-})
-
 const { user } = useUserSession()
-const isPiketOrAdmin = computed(() => {
-  return user.value && (user.value.role === 'ADMIN' || user.value.email?.toLowerCase().includes('piket') || user.value.nama?.toLowerCase().includes('piket'))
+const isGuruOrAdmin = computed(() => {
+  return user.value && (user.value.role === 'ADMIN' || user.value.role === 'GURU' || user.value.role === 'PETUGAS_PIKET')
 })
 
 watchEffect(() => {
-  if (user.value && !isPiketOrAdmin.value) {
+  if (user.value && !isGuruOrAdmin.value) {
     navigateTo('/absensi')
   }
 })
@@ -100,11 +96,6 @@ template
     <header class="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <NuxtLink to="/absensi" class="p-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </NuxtLink>
           <div>
             <h1 class="text-lg font-bold text-gray-900 dark:text-gray-100">Dashboard Guru Piket</h1>
             <p class="text-xs text-gray-500 dark:text-gray-400">Approval Kehadiran & Pemantauan Sesi Sekolah</p>

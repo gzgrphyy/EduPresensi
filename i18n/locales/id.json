@@ -36,7 +36,8 @@
   "role": {
     "admin": "Administrator",
     "guru": "PTK",
-    "siswa": "Murid"
+    "siswa": "Murid",
+    "petugasPiket": "Petugas Piket"
   },
   "app": {
     "sistemAbsensi": "Absensi Waktu Nyata",
@@ -55,6 +56,7 @@
     "tahunAjaran": "Tahun Ajaran",
     "dataRuangan": "Data Ruangan",
     "jadwalPelajaran": "Jadwal Pelajaran",
+    "jadwalPiket": "Jadwal Piket",
     "pemantauanRuangan": "Pemantauan Ruangan",
     "rekapAbsensi": "Rekap Absensi",
     "rekapPerKelas": "Per Kelas",
@@ -228,6 +230,36 @@
       "downloadTemplate": "Download Template",
       "belumPunyaTemplate": "Belum punya template?",
       "templateHint": "Download template Excel untuk diisi sebelum import."
+    },
+    "jadwalPiket": {
+      "title": "Jadwal Piket",
+      "desc": "Kelola jadwal tugas petugas piket",
+      "tambahJadwal": "Tambah Jadwal",
+      "searchPlaceholder": "Cari nama petugas piket...",
+      "tampilkanNonaktif": "Tampilkan nonaktif",
+      "emptyInactive": "Belum ada jadwal piket nonaktif",
+      "empty": "Belum ada jadwal piket",
+      "unitJadwal": "jadwal piket",
+      "modalCreate": "Tambah Jadwal Piket Baru",
+      "modalEdit": "Edit Jadwal Piket",
+      "labelPetugasPiket": "Petugas Piket",
+      "pilihPetugas": "Pilih petugas piket",
+      "labelHari": "Hari",
+      "pilihHari": "Pilih hari",
+      "labelJamMulai": "Jam Mulai",
+      "labelJamSelesai": "Jam Selesai",
+      "msgBerhasilEdit": "Jadwal piket berhasil diperbarui",
+      "msgBerhasilTambah": "Jadwal piket berhasil ditambahkan",
+      "msgBerhasilHapus": "Jadwal piket berhasil dihapus",
+      "msgBerhasilNonaktif": "Jadwal piket dinonaktifkan",
+      "msgBerhasilAktif": "Jadwal piket diaktifkan",
+      "toggleTitleNonaktif": "Nonaktifkan Jadwal",
+      "toggleTitleAktif": "Aktifkan Jadwal",
+      "toggleMsgNonaktif": "Jadwal ini tidak akan aktif sampai diaktifkan kembali.",
+      "toggleMsgAktif": "Jadwal ini akan aktif kembali.",
+      "yaNonaktifkan": "Ya, Nonaktifkan",
+      "confirmDeleteTitle": "Hapus Jadwal Piket",
+      "confirmDeleteMsg": "Yakin ingin menghapus jadwal ini?"
     },
     "alpha": {
       "title": "Detail Alpha Murid",

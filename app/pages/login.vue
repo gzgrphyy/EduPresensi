@@ -22,6 +22,7 @@ async function handleLogin() {
     if (role === 'ADMIN') navigateTo('/admin', { replace: true })
     else if (role === 'GURU') navigateTo('/absensi', { replace: true })
     else if (role === 'SISWA') navigateTo('/siswa', { replace: true })
+    else if (role === 'PETUGAS_PIKET') navigateTo('/piket', { replace: true })
   } catch (err: any) {
     errorMsg.value = err?.data?.statusMessage || err?.statusMessage || 'Login gagal'
   } finally {

@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     sesiAktifHariIni,
     semuaSesiHariIni,
   ] = await Promise.all([
-    prisma.user.count({ where: { role: 'GURU', isActive: true } }),
+    prisma.user.count({ where: { role: { in: ['GURU', 'PETUGAS_PIKET'] }, isActive: true } }),
     prisma.siswa.count(),
     prisma.kelas.count(),
     prisma.ruangan.count(),

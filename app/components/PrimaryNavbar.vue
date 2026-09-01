@@ -15,6 +15,7 @@ const today = computed(() =>
 
 const roleLabel: Record<string, string> = {
   ADMIN: 'Administrator',
+  PETUGAS_PIKET: 'Petugas Piket',
 }
 
 interface PrimaryMenuItem {
@@ -48,7 +49,8 @@ const activeMenu = computed(() => {
     path.startsWith('/admin/kelas') ||
     path.startsWith('/admin/tahun-ajaran') ||
     path.startsWith('/admin/ruangan') ||
-    path.startsWith('/admin/jadwal-pelajaran')
+    path.startsWith('/admin/jadwal-pelajaran') ||
+    path.startsWith('/admin/jadwal-piket')
   ) return 'dataMaster'
   if (path.startsWith('/admin/monitoring')) return 'pemantauan'
   if (path.startsWith('/admin/rekap') || path.startsWith('/admin/export')) return 'laporan'

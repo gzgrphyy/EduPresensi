@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
 
   const data = await prisma.user.findMany({
     where: {
-      role: 'GURU',
+      role: { in: ['GURU', 'PETUGAS_PIKET'] },
       ...(showInactive ? { isActive: false } : { isActive: true }),
       ...(search && { nama: { contains: search } })
     },
@@ -18,6 +18,7 @@ export default defineEventHandler(async (event) => {
       nomorHp2: true,
       jenisKelamin: true,
       foto: true,
+      role: true,
       isActive: true,
       createdAt: true,
       updatedAt: true,

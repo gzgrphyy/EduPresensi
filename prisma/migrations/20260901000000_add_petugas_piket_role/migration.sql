@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `users` MODIFY COLUMN `role` ENUM('ADMIN', 'GURU', 'SISWA', 'PETUGAS_PIKET') NOT NULL;

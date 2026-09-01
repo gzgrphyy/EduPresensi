@@ -35,8 +35,9 @@
   },
   "role": {
     "admin": "Administrator",
-    "guru": "Teacher",
-    "siswa": "Student"
+    "guru": "PTK",
+    "siswa": "Student",
+    "petugasPiket": "Picket Officer"
   },
   "app": {
     "sistemAbsensi": "Real-time Attendance",
@@ -55,6 +56,7 @@
     "tahunAjaran": "Academic Year",
     "dataRuangan": "Rooms Data",
     "jadwalPelajaran": "Schedule",
+    "jadwalPiket": "Picket Schedule",
     "pemantauanRuangan": "Room Monitoring",
     "rekapAbsensi": "Attendance Recap",
     "rekapPerKelas": "Per Class",
@@ -228,6 +230,36 @@
       "belumPunyaTemplate": "Need a template?",
       "templateHint": "Download the Excel template before importing.",
       "semuaJenjang": "All Grades"
+    },
+    "jadwalPiket": {
+      "title": "Picket Schedule",
+      "desc": "Manage picket duty schedules",
+      "tambahJadwal": "Add Schedule",
+      "searchPlaceholder": "Search officer name...",
+      "tampilkanNonaktif": "Show inactive",
+      "emptyInactive": "No inactive picket schedules",
+      "empty": "No picket schedules",
+      "unitJadwal": "picket schedules",
+      "modalCreate": "Add New Picket Schedule",
+      "modalEdit": "Edit Picket Schedule",
+      "labelPetugasPiket": "Picket Officer",
+      "pilihPetugas": "Select officer",
+      "labelHari": "Day",
+      "pilihHari": "Select day",
+      "labelJamMulai": "Start Time",
+      "labelJamSelesai": "End Time",
+      "msgBerhasilEdit": "Picket schedule updated successfully",
+      "msgBerhasilTambah": "Picket schedule added successfully",
+      "msgBerhasilHapus": "Picket schedule deleted successfully",
+      "msgBerhasilNonaktif": "Picket schedule deactivated",
+      "msgBerhasilAktif": "Picket schedule activated",
+      "toggleTitleNonaktif": "Deactivate Schedule",
+      "toggleTitleAktif": "Activate Schedule",
+      "toggleMsgNonaktif": "This schedule will be inactive until reactivated.",
+      "toggleMsgAktif": "This schedule will be active again.",
+      "yaNonaktifkan": "Yes, Deactivate",
+      "confirmDeleteTitle": "Delete Picket Schedule",
+      "confirmDeleteMsg": "Are you sure you want to delete this schedule?"
     },
     "alpha": {
       "title": "Student Alpha Details",

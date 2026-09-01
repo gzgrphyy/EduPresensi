@@ -1,9 +1,9 @@
 
 export default defineEventHandler(async (event) => {
   const user = (await getUserSession(event)).user
-  const isPiketOrAdmin = user && (user.role === 'ADMIN' || user.email?.toLowerCase().includes('piket') || user.nama?.toLowerCase().includes('piket'))
-  if (!isPiketOrAdmin) {
-    throw createError({ statusCode: 403, statusMessage: 'Akses khusus Akun / Petugas Piket atau Admin' })
+  const isGuruOrAdmin = user && (user.role === 'ADMIN' || user.role === 'GURU' || user.role === 'PETUGAS_PIKET')
+  if (!isGuruOrAdmin) {
+    throw createError({ statusCode: 403, statusMessage: 'Akses khusus Guru Piket atau Admin' })
   }
 
   const query = getQuery(event)
