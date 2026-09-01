@@ -102,6 +102,7 @@ export default defineEventHandler(async (event) => {
     jamSelesai?: string
     isGuruBerhalangan?: boolean
     petugasPiketNama?: string | null
+    selesai: boolean
   }
 
   if (todayRequests.length > 0) {
@@ -113,6 +114,7 @@ export default defineEventHandler(async (event) => {
     })
     const latest = inWindow || todayRequests[0]
     const status = latest.status
+    const isSelesai = tNow > timeToMinutes(latest.sesi.jadwal.jamSelesai) + TOLERANSI_MENIT
     todayStatus = {
       state: status === 'ALPHA' ? 'ALPHA' : status === 'PENDING' ? 'PENDING' : 'PRESENT',
       status,
@@ -123,12 +125,14 @@ export default defineEventHandler(async (event) => {
       jamMulai: latest.sesi.jadwal.jamMulai,
       jamSelesai: latest.sesi.jadwal.jamSelesai,
       isGuruBerhalangan: latest.sesi.isGuruBerhalangan,
-      petugasPiketNama: latest.sesi.petugasPiketNama
+      petugasPiketNama: latest.sesi.petugasPiketNama,
+      selesai: isSelesai
     }
   } else {
     todayStatus = {
       state: todayJadwalCount === 0 ? 'NO_SESSION' : 'NOT_YET',
-      status: undefined
+      status: undefined,
+      selesai: false
     }
   }
 

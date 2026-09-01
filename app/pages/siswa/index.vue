@@ -12,6 +12,7 @@ interface TodayStatus {
   jamSelesai?: string
   isGuruBerhalangan?: boolean
   petugasPiketNama?: string | null
+  selesai: boolean
 }
 
 interface DashboardData {
@@ -62,11 +63,17 @@ const { data: kabar, refresh: refreshKabar } = useFetch<KabarStatus>('/api/siswa
 const kabarSending = ref<'BELUM_SELESAI' | 'SUDAH_BERES' | null>(null)
 const kabarTerkirim = ref<Record<string, boolean>>({})
 
-const showStatusCard = ref(true)
+const STATUS_STORAGE_KEY = `siswa_status_closed_${new Date().toISOString().slice(0, 10)}`
+const showStatusCard = ref(false)
 const confirmHideStatus = ref(false)
+
+onMounted(() => {
+  showStatusCard.value = !localStorage.getItem(STATUS_STORAGE_KEY)
+})
 
 function hideStatusCard() {
   showStatusCard.value = false
+  localStorage.setItem(STATUS_STORAGE_KEY, '1')
   confirmHideStatus.value = false
 }
 
@@ -192,7 +199,7 @@ onMounted(() => {
     <template v-else-if="data">
       <!-- Status card -->
       <section
-        v-if="showStatusCard"
+        v-if="showStatusCard && !data.todayStatus.selesai"
         class="rounded-2xl border p-5 shadow-card dark:shadow-dark-card"
         :class="{
           'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/40 dark:to-green-900/20 border-green-200 dark:border-green-800': data.todayStatus.state === 'PRESENT',
@@ -215,7 +222,7 @@ onMounted(() => {
             </div>
             <button
               @click="confirmHideStatus = true"
-              class="p-1.5 rounded-lg text-green-600/60 dark:text-green-400/60 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex-shrink-0"
+              class="p-1.5 rounded-lg text-gray-900 dark:text-gray-100 flex-shrink-0"
               title="Sembunyikan"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,7 +266,7 @@ onMounted(() => {
             </div>
             <button
               @click="confirmHideStatus = true"
-              class="p-1.5 rounded-lg text-amber-600/60 dark:text-amber-400/60 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex-shrink-0"
+              class="p-1.5 rounded-lg text-gray-900 dark:text-gray-100 flex-shrink-0"
               title="Sembunyikan"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -516,16 +523,13 @@ onMounted(() => {
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2">
                 <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ item.mapel }}</p>
-                <span v-if="item.isGuruBerhalangan" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 flex-shrink-0">
-                  <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
+                <span v-if="item.isGuruBerhalangan" class="text-[11px] text-gray-500 dark:text-gray-400 flex-shrink-0">
                   Berhalangan
                 </span>
               </div>
               <p class="text-xs text-gray-500 dark:text-gray-400">{{ formatTanggal(item.tanggal) }} — {{ item.kelas }}</p>
-              <p v-if="item.isGuruBerhalangan && item.petugasPiketNama" class="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5">
-                Petugas Piket: {{ item.petugasPiketNama }}
+              <p v-if="item.isGuruBerhalangan && item.petugasPiketNama" class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
+                Oleh: {{ item.petugasPiketNama }}
               </p>
             </div>
             <span class="inline-flex items-center gap-1.5 flex-shrink-0">

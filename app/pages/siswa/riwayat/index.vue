@@ -175,16 +175,11 @@ async function downloadExport() {
                 <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ fmtDate(item.tanggal) }}</td>
                 <td class="px-4 py-3">
                   <div class="font-medium text-gray-900 dark:text-gray-100">{{ item.mapel }}</div>
-                  <div v-if="item.isGuruBerhalangan" class="flex items-center gap-1 mt-0.5">
-                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
-                      <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                      </svg>
-                      Guru Berhalangan
-                    </span>
-                    <span v-if="item.petugasPiketNama" class="text-[10px] text-amber-600 dark:text-amber-400">
-                      · {{ item.petugasPiketNama }}
-                    </span>
+                  <div v-if="item.isGuruBerhalangan" class="mt-0.5">
+                    <p class="text-[12px] text-gray-500 dark:text-gray-400 whitespace-nowrap">PTK Berhalangan</p>
+                    <p v-if="item.petugasPiketNama" class="text-[12px] text-gray-400 dark:text-gray-500">
+                      Oleh: {{ item.petugasPiketNama }}
+                    </p>
                   </div>
                 </td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ item.kelas }}</td>
