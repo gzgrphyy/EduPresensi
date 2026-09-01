@@ -17,7 +17,7 @@ interface RiwayatItem {
   alasan: string | null
 }
 
-const selectedDate = ref(new Date().toISOString().split('T')[0])
+const selectedDate = ref(localDateStr(new Date()))
 
 const alasanLabels: Record<string, string> = {
   SAKIT: 'Sakit',

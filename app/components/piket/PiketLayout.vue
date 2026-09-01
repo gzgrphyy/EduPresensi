@@ -53,7 +53,7 @@ onMounted(() => {
     </header>
 
     <!-- Scrollable Content -->
-    <main class="flex-1 overflow-y-auto min-h-0">
+    <main class="piket-scroll-main flex-1 overflow-y-auto min-h-0">
       <div class="max-w-lg mx-auto w-full px-4 pt-4 pb-24">
         <slot />
       </div>

@@ -264,7 +264,7 @@ const showWaliKelasLink = computed(() => !!waliKelasData.value?.isWaliKelas)
 
 // Fitur Ajukan Tidak Masuk (Skenario A)
 const showBerhalanganModal = ref(false)
-const berhalanganTanggal = ref(new Date().toISOString().split('T')[0])
+const berhalanganTanggal = ref(localDateStr(new Date()))
 const berhalanganAlasan = ref('SAKIT')
 const berhalanganKeterangan = ref('')
 const submittingBerhalangan = ref(false)
