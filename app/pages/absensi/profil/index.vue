@@ -237,7 +237,7 @@ async function handleChangePassword() {
             <p class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ k.nama }}</p>
             <p class="text-xs text-gray-400 dark:text-gray-500">Kelas</p>
           </div>
-          <span class="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">Wali</span>
+          <span class="flex-shrink-0 inline-flex items-center text-[10px] font-medium text-gray-500 dark:text-gray-400">Wali</span>
         </div>
       </div>
       <p v-else class="text-sm text-gray-500 dark:text-gray-400">Bukan wali kelas.</p>

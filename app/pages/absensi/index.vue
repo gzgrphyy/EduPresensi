@@ -269,6 +269,13 @@ const berhalanganAlasan = ref('SAKIT')
 const berhalanganKeterangan = ref('')
 const submittingBerhalangan = ref(false)
 
+const alasanOptions = [
+  { label: 'Sakit', value: 'SAKIT' },
+  { label: 'Izin', value: 'IZIN' },
+  { label: 'Dinas Luar', value: 'DINAS_LUAR' },
+  { label: 'Lainnya', value: 'LAINNYA' },
+]
+
 const { data: activeBerhalangan, refresh: refreshBerhalangan } = useFetch('/api/guru/berhalangan', {
   immediate: true
 })
@@ -327,17 +334,15 @@ async function cancelBerhalangan(id: number) {
     <div class="mb-4">
       <button
         @click="showBerhalanganModal = true"
-        class="w-full group flex items-center gap-3 rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/20 p-4 text-left transition-colors hover:bg-amber-100/50 dark:hover:bg-amber-900/40"
+        class="w-full flex items-center gap-3 rounded-lg border border-gray-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800 px-4 py-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-slate-700/50"
       >
-        <div class="p-2.5 rounded-xl bg-amber-500 text-white flex-shrink-0">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-        </div>
         <div class="min-w-0 flex-1">
-          <p class="text-sm font-bold text-gray-900 dark:text-gray-100">Ajukan Tidak Masuk</p>
-          <p class="text-xs text-amber-700 dark:text-amber-300 mt-0.5">Lapor sakit/izin/dinas</p>
+          <p class="text-sm font-semibold text-gray-900 dark:text-gray-100">Ajukan Tidak Masuk</p>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Lapor sakit/izin/dinas</p>
         </div>
+        <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
       </button>
     </div>
 
@@ -346,17 +351,17 @@ async function cancelBerhalangan(id: number) {
       <div
         v-for="item in activeBerhalangan.list"
         :key="item.id"
-        class="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 text-xs"
+        class="flex items-center justify-between gap-3 p-3.5 rounded-lg border border-gray-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800 text-xs"
       >
         <div>
-          <p class="font-bold text-amber-900 dark:text-amber-200">
+          <p class="font-semibold text-gray-900 dark:text-gray-100">
             Tidak Masuk: {{ (() => { const d = new Date(item.tanggal); return isNaN(d.getTime()) ? '-' : d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) })() }} — {{ item.alasan }}
           </p>
-          <p v-if="item.keterangan" class="text-amber-700 dark:text-amber-300 mt-0.5">{{ item.keterangan }}</p>
+          <p v-if="item.keterangan" class="text-gray-500 dark:text-gray-400 mt-0.5">{{ item.keterangan }}</p>
         </div>
         <button
           @click="cancelBerhalangan(item.id)"
-          class="px-3 py-1.5 font-semibold text-red-600 dark:text-red-400 bg-white dark:bg-slate-800 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-50 transition-colors"
+          class="px-3 py-1.5 font-semibold text-gray-500 dark:text-gray-400 border border-gray-200/80 dark:border-slate-700/80 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
         >
           Batalkan
         </button>
@@ -710,30 +715,17 @@ async function cancelBerhalangan(id: number) {
 
         <form @submit.prevent="submitBerhalangan" class="space-y-4">
           <div>
-            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Tanggal</label>
-            <input
-              v-model="berhalanganTanggal"
-              type="date"
-              required
-              class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500"
-            />
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Tanggal</label>
+            <BaseCalendar v-model="berhalanganTanggal" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Alasan</label>
-            <select
-              v-model="berhalanganAlasan"
-              class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="SAKIT">Sakit</option>
-              <option value="IZIN">Izin</option>
-              <option value="DINAS_LUAR">Dinas Luar</option>
-              <option value="LAINNYA">Lainnya</option>
-            </select>
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Alasan</label>
+            <BaseSelect v-model="berhalanganAlasan" :options="alasanOptions" placeholder="Pilih alasan" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Keterangan / Catatan (Opsional)</label>
+            <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Keterangan / Catatan (Opsional)</label>
             <textarea
               v-model="berhalanganKeterangan"
               rows="3"
