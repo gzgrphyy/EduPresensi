@@ -17,11 +17,10 @@
     return ''
   }
 
-  const draftSearch = ref('')
+  const searchQuery = ref('')
   const draftJenjang = ref('')
   const draftKelas = ref('')
 
-  const appliedSearch = ref('')
   const appliedJenjang = ref('')
   const appliedKelas = ref('')
 
@@ -34,7 +33,7 @@
 
   const { data: kelasList, pending, refresh } = useFetch < Kelas[] > (() => {
     const params = new URLSearchParams()
-    if (appliedSearch.value) params.set('search', appliedSearch.value)
+    if (searchQuery.value) params.set('search', searchQuery.value)
     return `/api/admin/kelas?${params.toString()}`
   }, { immediate: true })
 
@@ -68,19 +67,17 @@
     return filteredData.value.slice(start, start + pageSize)
   })
 
-  watch([appliedSearch, appliedJenjang, appliedKelas], () => { page.value = 1 })
+  watch([searchQuery, appliedJenjang, appliedKelas], () => { page.value = 1 })
 
   function applyFilter() {
-    appliedSearch.value = draftSearch.value.trim()
     appliedJenjang.value = draftJenjang.value
     appliedKelas.value = draftKelas.value
   }
 
   function resetFilter() {
-    draftSearch.value = ''
+    searchQuery.value = ''
     draftJenjang.value = ''
     draftKelas.value = ''
-    appliedSearch.value = ''
     appliedJenjang.value = ''
     appliedKelas.value = ''
   }
@@ -204,7 +201,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input v-model="draftSearch" type="text" :placeholder="t('admin.kelas.searchPlaceholder')"
+          <input v-model="searchQuery" type="text" :placeholder="t('admin.kelas.searchPlaceholder')"
             class="pl-9 pr-3 py-2 border admin-accent-border rounded-lg text-xs bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-400" />
         </div>
         <select v-model="draftJenjang"

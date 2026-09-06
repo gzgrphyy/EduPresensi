@@ -34,6 +34,32 @@ function statusLabel(status: string) {
 function aksiLabel(aksi: string) {
   return aksi.includes('dibuka') ? t('admin.beranda.aksiDibuka') : t('admin.beranda.aksiDitutup')
 }
+
+const aktivitasPage = ref(1)
+const aktivitasPageSize = 10
+
+const aktivitasTotalPages = computed(() => Math.max(1, Math.ceil((data.value?.aktivitasTerbaru.length || 0) / aktivitasPageSize)))
+
+const aktivitasPageNumbers = computed<(number | '...')[]>(() => {
+  const total = aktivitasTotalPages.value
+  const current = aktivitasPage.value
+  const set = new Set<number>([1, total, current - 1, current, current + 1])
+  const sorted = [...set].filter(n => n >= 1 && n <= total).sort((a, b) => a - b)
+  const result: (number | '...')[] = []
+  let prev = 0
+  for (const n of sorted) {
+    if (n - prev > 1) result.push('...')
+    result.push(n)
+    prev = n
+  }
+  return result
+})
+
+const visibleAktivitas = computed(() => {
+  const list = data.value?.aktivitasTerbaru || []
+  const start = (aktivitasPage.value - 1) * aktivitasPageSize
+  return list.slice(start, start + aktivitasPageSize)
+})
 </script>
 
 <template>
@@ -286,7 +312,7 @@ function aksiLabel(aksi: string) {
               </tr>
             </thead>
             <tbody class="divide-y admin-accent-divide">
-              <tr v-for="(item, idx) in data.aktivitasTerbaru" :key="idx" class="hover:bg-gray-50/40 dark:hover:bg-gray-700/30 transition-colors">
+              <tr v-for="(item, idx) in visibleAktivitas" :key="idx" class="hover:bg-gray-50/40 dark:hover:bg-gray-700/30 transition-colors">
                 <td class="px-4 py-3 text-gray-400 dark:text-gray-500 text-xs font-mono">{{ item.waktu }}</td>
                 <td class="px-4 py-3">
                   <span class="inline-flex items-center gap-1.5">
@@ -304,6 +330,39 @@ function aksiLabel(aksi: string) {
               </tr>
             </tbody>
           </table>
+        </div>
+        <div v-if="(data.aktivitasTerbaru.length || 0) > aktivitasPageSize"
+          class="px-4 sm:px-6 py-3 border-t admin-accent-border flex items-center justify-between gap-3">
+          <p class="text-xs text-gray-400 dark:text-gray-500">
+            {{ t('common.menampilkan', { from: ((aktivitasPage - 1) * aktivitasPageSize) + 1, to: Math.min(aktivitasPage * aktivitasPageSize, data.aktivitasTerbaru.length), total: data.aktivitasTerbaru.length, unit: t('admin.beranda.unitAktivitas') }) }}
+          </p>
+          <div class="ml-auto flex items-center gap-2">
+            <button @click="aktivitasPage--" :disabled="aktivitasPage <= 1"
+              class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              {{ t('common.sebelumnya') }}
+            </button>
+            <div class="flex items-center gap-1">
+              <template v-for="(n, i) in aktivitasPageNumbers" :key="i">
+                <button v-if="n !== '...'" @click="aktivitasPage = n" :disabled="n === aktivitasPage"
+                  :class="n === aktivitasPage
+                    ? 'w-7 h-7 rounded-md text-xs text-white bg-primary-600 ring-1 ring-primary-600 cursor-default'
+                    : 'w-7 h-7 rounded-md text-xs font-medium text-primary-600 dark:text-primary-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors'">
+                  {{ n }}
+                </button>
+                <span v-else class="px-0.5 text-xs text-gray-400 dark:text-gray-500 select-none">&hellip;</span>
+              </template>
+            </div>
+            <button @click="aktivitasPage++" :disabled="aktivitasPage >= aktivitasTotalPages"
+              class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              {{ t('common.selanjutnya') }}
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </template>
